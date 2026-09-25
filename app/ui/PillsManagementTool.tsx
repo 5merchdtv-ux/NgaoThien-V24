@@ -24,6 +24,7 @@ import {
   X,
   ArrowRightLeft,
   ChevronDown,
+  Store,
 } from "lucide-react";
 
 interface PillItem {
@@ -58,6 +59,76 @@ interface ApiResponse {
   activeCount?: number;
   lockedCount?: number;
   groups?: PillGroup[];
+}
+
+function PillIconThumbnail({ pid, name }: { pid: number; name: string }) {
+  const [broken, setBroken] = useState(false);
+
+  return (
+    <div
+      style={{
+        width: "44px",
+        height: "44px",
+        minWidth: "44px",
+        borderRadius: "8px",
+        background: "radial-gradient(circle, rgba(45, 33, 20, 0.95) 0%, rgba(12, 10, 7, 0.98) 100%)",
+        border: "1.5px solid rgba(230, 174, 78, 0.45)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        position: "relative",
+        boxShadow: "0 3px 8px rgba(0,0,0,0.6)",
+        overflow: "hidden",
+      }}
+      title={`PID: ${pid} - ${name}`}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={broken ? "/item-icons/0.jpg" : `/item-icons/${pid}.jpg`}
+        alt={name}
+        width={36}
+        height={36}
+        loading="lazy"
+        onError={() => setBroken(true)}
+        style={{
+          objectFit: "contain",
+          imageRendering: "crisp-edges",
+          filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.8))",
+        }}
+      />
+    </div>
+  );
+}
+
+function getGroupBadgeColor(groupId: string): { bg: string; border: string; text: string } {
+  switch (groupId) {
+    case "Group_ChiTonPhu":
+      return { bg: "rgba(241, 196, 15, 0.15)", border: "rgba(241, 196, 15, 0.4)", text: "#f1c40f" };
+    case "Group_ChiTonHoan":
+      return { bg: "rgba(230, 126, 34, 0.15)", border: "rgba(230, 126, 34, 0.4)", text: "#e67e22" };
+    case "Group_CoDiepPhu":
+      return { bg: "rgba(155, 89, 182, 0.15)", border: "rgba(155, 89, 182, 0.4)", text: "#9b59b6" };
+    case "Group_YeuHoaThanhThao":
+      return { bg: "rgba(46, 204, 113, 0.15)", border: "rgba(46, 204, 113, 0.4)", text: "#2ecc71" };
+    case "Group_ChiTheu":
+      return { bg: "rgba(26, 188, 156, 0.15)", border: "rgba(26, 188, 156, 0.4)", text: "#1abc9c" };
+    case "Group_MaVoHaiSan":
+      return { bg: "rgba(52, 152, 219, 0.15)", border: "rgba(52, 152, 219, 0.4)", text: "#3498db" };
+    case "Group_ThanThu":
+      return { bg: "rgba(255, 215, 0, 0.2)", border: "rgba(255, 215, 0, 0.5)", text: "#ffd700" };
+    case "Group_ThanDan":
+      return { bg: "rgba(231, 76, 60, 0.15)", border: "rgba(231, 76, 60, 0.4)", text: "#e74c3c" };
+    case "Group_BinhMauSamAuto":
+      return { bg: "rgba(231, 76, 60, 0.2)", border: "rgba(231, 76, 60, 0.5)", text: "#ff6b6b" };
+    case "Group_KeoHoLo":
+      return { bg: "rgba(243, 156, 18, 0.15)", border: "rgba(243, 156, 18, 0.4)", text: "#f39c12" };
+    case "Group_ThuocLacPK":
+      return { bg: "rgba(192, 57, 43, 0.15)", border: "rgba(192, 57, 43, 0.4)", text: "#e74c3c" };
+    case "Group_TuiVoHoangTe":
+      return { bg: "rgba(218, 165, 32, 0.2)", border: "rgba(218, 165, 32, 0.5)", text: "#ffd47c" };
+    default:
+      return { bg: "rgba(230, 174, 78, 0.12)", border: "rgba(230, 174, 78, 0.3)", text: "#ffd47c" };
+  }
 }
 
 export default function PillsManagementTool() {
@@ -148,7 +219,7 @@ export default function PillsManagementTool() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           pid: pill.pid,
-          lockStatus: nextLocked ? 1 : 0,
+          enabled: !nextLocked,
           kenh: targetChannel,
         }),
       });
@@ -192,7 +263,7 @@ export default function PillsManagementTool() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           groupId: groupId,
-          lockStatus: lockStatus,
+          enabled: lockStatus === 0,
           kenh: targetChannel,
         }),
       });
@@ -869,192 +940,247 @@ export default function PillsManagementTool() {
                     letterSpacing: "0.5px",
                   }}
                 >
-                  <th style={{ padding: "12px 16px" }}>Vật Phẩm Pill</th>
-                  <th style={{ padding: "12px 16px" }}>PID</th>
-                  <th style={{ padding: "12px 16px" }}>Nhóm Buff</th>
-                  <th style={{ padding: "12px 16px" }}>Nguồn Gốc</th>
-                  <th style={{ padding: "12px 16px" }}>Tác Dụng & Chỉ Số</th>
-                  <th style={{ padding: "12px 16px" }}>Thời Hạn</th>
-                  <th style={{ padding: "12px 16px" }}>Cơ Chế Cắn Trùng</th>
-                  <th style={{ padding: "12px 16px", textAlign: "center" }}>Trạng Thái</th>
-                  <th style={{ padding: "12px 16px", textAlign: "center" }}>Hành Động</th>
+                  <th style={{ padding: "14px 16px", minWidth: "300px" }}>Vật Phẩm Pill</th>
+                  <th style={{ padding: "14px 16px", width: "110px" }}>PID</th>
+                  <th style={{ padding: "14px 16px" }}>Nhóm Buff</th>
+                  <th style={{ padding: "14px 16px" }}>Nguồn Gốc</th>
+                  <th style={{ padding: "14px 16px", minWidth: "220px" }}>Tác Dụng & Chỉ Số</th>
+                  <th style={{ padding: "14px 16px", width: "120px" }}>Thời Hạn</th>
+                  <th style={{ padding: "14px 16px", minWidth: "220px" }}>Cơ Chế Cắn Trùng</th>
+                  <th style={{ padding: "14px 16px", textAlign: "center", width: "110px" }}>Trạng Thái</th>
+                  <th style={{ padding: "14px 16px", textAlign: "center", width: "110px" }}>Hành Động</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={9} style={{ padding: "40px", textAlign: "center", color: "#c8c0b4" }}>
-                      <RefreshCw size={24} className="animate-spin" style={{ margin: "0 auto 10px" }} />
+                    <td colSpan={9} style={{ padding: "50px", textAlign: "center", color: "#c8c0b4" }}>
+                      <RefreshCw size={26} className="animate-spin" style={{ margin: "0 auto 12px" }} />
                       Đang tải danh sách pill và dữ liệu database...
                     </td>
                   </tr>
                 ) : filteredPills.length === 0 ? (
                   <tr>
-                    <td colSpan={9} style={{ padding: "40px", textAlign: "center", color: "#91887d" }}>
+                    <td colSpan={9} style={{ padding: "50px", textAlign: "center", color: "#91887d" }}>
                       Không tìm thấy pill nào phù hợp với bộ lọc hiện tại.
                     </td>
                   </tr>
                 ) : (
-                  filteredPills.map((pill) => (
-                    <tr
-                      key={pill.pid}
-                      style={{
-                        borderBottom: "1px solid rgba(230, 174, 78, 0.08)",
-                        background: pill.isLocked ? "rgba(231, 76, 60, 0.04)" : "transparent",
-                        transition: "background 0.15s ease",
-                      }}
-                    >
-                      {/* Name */}
-                      <td style={{ padding: "12px 16px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                          <div>
-                            <strong style={{ color: pill.isLocked ? "#e74c3c" : "#f7f3ea", fontSize: "14px" }}>
-                              {pill.name}
-                            </strong>
-                            <div style={{ fontSize: "11px", color: "#91887d" }}>
-                              {pill.originalName}
+                  filteredPills.map((pill) => {
+                    const groupColor = getGroupBadgeColor(pill.groupId);
+
+                    return (
+                      <tr
+                        key={pill.pid}
+                        style={{
+                          borderBottom: "1px solid rgba(230, 174, 78, 0.08)",
+                          background: pill.isLocked ? "rgba(231, 76, 60, 0.04)" : "transparent",
+                          transition: "background 0.15s ease",
+                        }}
+                      >
+                        {/* Name + Icon */}
+                        <td style={{ padding: "12px 16px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                            <PillIconThumbnail pid={pill.pid} name={pill.name} />
+                            <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
+                              <strong style={{ color: pill.isLocked ? "#e74c3c" : "#fff", fontSize: "14px", fontWeight: 700 }}>
+                                {pill.name}
+                              </strong>
+                              {pill.originalName && pill.originalName !== pill.name && (
+                                <div style={{ fontSize: "11px", color: "#91887d", lineHeight: "1.3" }}>
+                                  {pill.originalName}
+                                </div>
+                              )}
                             </div>
                           </div>
-                        </div>
-                      </td>
+                        </td>
 
-                      {/* PID */}
-                      <td style={{ padding: "12px 16px", fontFamily: "monospace", fontSize: "13px", color: "#ffd47c" }}>
-                        {pill.pid}
-                      </td>
-
-                      {/* Group */}
-                      <td style={{ padding: "12px 16px" }}>
-                        <span
-                          style={{
-                            fontSize: "12px",
-                            background: "rgba(230, 174, 78, 0.1)",
-                            color: "#ffd47c",
-                            padding: "3px 8px",
-                            borderRadius: "4px",
-                            border: "1px solid rgba(230, 174, 78, 0.2)",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {pill.groupName}
-                        </span>
-                      </td>
-
-                      {/* Source */}
-                      <td style={{ padding: "12px 16px" }}>
-                        {pill.isCashShop ? (
+                        {/* PID */}
+                        <td style={{ padding: "12px 16px" }}>
                           <span
                             style={{
-                              fontSize: "11px",
-                              background: "rgba(241, 196, 15, 0.15)",
-                              color: "#f1c40f",
-                              padding: "2px 8px",
+                              fontFamily: "monospace",
+                              fontSize: "12px",
+                              fontWeight: 700,
+                              color: "#ffd47c",
+                              background: "rgba(230, 174, 78, 0.1)",
+                              border: "1px solid rgba(230, 174, 78, 0.25)",
+                              padding: "2px 6px",
                               borderRadius: "4px",
-                              border: "1px solid rgba(241, 196, 15, 0.3)",
-                              fontWeight: 600,
+                              display: "inline-block",
                             }}
                           >
-                            Bách Bảo Các
+                            {pill.pid}
                           </span>
-                        ) : (
+                        </td>
+
+                        {/* Group */}
+                        <td style={{ padding: "12px 16px" }}>
                           <span
                             style={{
-                              fontSize: "11px",
-                              background: "rgba(52, 152, 219, 0.15)",
-                              color: "#3498db",
-                              padding: "2px 8px",
-                              borderRadius: "4px",
-                              border: "1px solid rgba(52, 152, 219, 0.3)",
-                              fontWeight: 600,
-                            }}
-                          >
-                            {pill.source}
-                          </span>
-                        )}
-                      </td>
-
-                      {/* Effect */}
-                      <td style={{ padding: "12px 16px", fontSize: "13px", color: "#ddd5ca", maxWidth: "280px" }}>
-                        {pill.effectDescription}
-                      </td>
-
-                      {/* Duration */}
-                      <td style={{ padding: "12px 16px", fontSize: "12px", color: "#c8c0b4", whiteSpace: "nowrap" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                          <Clock size={12} style={{ color: "#ffd47c" }} />
-                          {pill.duration}
-                        </div>
-                      </td>
-
-                      {/* Stacking Rule */}
-                      <td style={{ padding: "12px 16px", fontSize: "12px", color: "#a8a094", maxWidth: "220px" }}>
-                        {pill.stackRule}
-                      </td>
-
-                      {/* Lock Status */}
-                      <td style={{ padding: "12px 16px", textAlign: "center" }}>
-                        {pill.isLocked ? (
-                          <span
-                            style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: "4px",
                               fontSize: "11px",
                               fontWeight: 700,
-                              background: "rgba(231, 76, 60, 0.15)",
-                              color: "#e74c3c",
+                              background: groupColor.bg,
+                              color: groupColor.text,
                               padding: "4px 8px",
                               borderRadius: "4px",
-                              border: "1px solid rgba(231, 76, 60, 0.3)",
+                              border: `1px solid ${groupColor.border}`,
+                              whiteSpace: "nowrap",
+                              display: "inline-block",
                             }}
                           >
-                            <XCircle size={12} /> Cấm Dùng
+                            {pill.groupName}
                           </span>
-                        ) : (
-                          <span
-                            style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: "4px",
-                              fontSize: "11px",
-                              fontWeight: 700,
-                              background: "rgba(46, 204, 113, 0.15)",
-                              color: "#2ecc71",
-                              padding: "4px 8px",
-                              borderRadius: "4px",
-                              border: "1px solid rgba(46, 204, 113, 0.3)",
-                            }}
-                          >
-                            <CheckCircle2 size={12} /> Cho Phép
-                          </span>
-                        )}
-                      </td>
+                        </td>
 
-                      {/* Action Button */}
-                      <td style={{ padding: "12px 16px", textAlign: "center" }}>
-                        <button
-                          type="button"
-                          onClick={() => handleTogglePill(pill)}
-                          disabled={saving}
-                          style={{
-                            background: pill.isLocked
-                              ? "rgba(46, 204, 113, 0.18)"
-                              : "rgba(231, 76, 60, 0.18)",
-                            color: pill.isLocked ? "#2ecc71" : "#e74c3c",
-                            border: `1px solid ${pill.isLocked ? "rgba(46, 204, 113, 0.4)" : "rgba(231, 76, 60, 0.4)"}`,
-                            borderRadius: "6px",
-                            padding: "6px 12px",
-                            fontSize: "12px",
-                            fontWeight: 700,
-                            cursor: saving ? "not-allowed" : "pointer",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {pill.isLocked ? "Mở Khóa" : "Khóa Dùng"}
-                        </button>
-                      </td>
-                    </tr>
-                  ))
+                        {/* Source */}
+                        <td style={{ padding: "12px 16px" }}>
+                          {pill.isCashShop ? (
+                            <span
+                              style={{
+                                fontSize: "11px",
+                                background: "rgba(241, 196, 15, 0.15)",
+                                color: "#f1c40f",
+                                padding: "3px 8px",
+                                borderRadius: "4px",
+                                border: "1px solid rgba(241, 196, 15, 0.35)",
+                                fontWeight: 700,
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "4px",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              <ShoppingBag size={11} />
+                              Bách Bảo Các
+                            </span>
+                          ) : pill.source.includes("NPC") ? (
+                            <span
+                              style={{
+                                fontSize: "11px",
+                                background: "rgba(26, 188, 156, 0.15)",
+                                color: "#1abc9c",
+                                padding: "3px 8px",
+                                borderRadius: "4px",
+                                border: "1px solid rgba(26, 188, 156, 0.35)",
+                                fontWeight: 600,
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "4px",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              <Store size={11} />
+                              Shop NPC
+                            </span>
+                          ) : (
+                            <span
+                              style={{
+                                fontSize: "11px",
+                                background: "rgba(52, 152, 219, 0.15)",
+                                color: "#3498db",
+                                padding: "3px 8px",
+                                borderRadius: "4px",
+                                border: "1px solid rgba(52, 152, 219, 0.35)",
+                                fontWeight: 600,
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "4px",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              <Swords size={11} />
+                              {pill.source}
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Effect */}
+                        <td style={{ padding: "12px 16px", fontSize: "12px", color: "#ddd5ca", lineHeight: "1.4" }}>
+                          {pill.effectDescription}
+                        </td>
+
+                        {/* Duration */}
+                        <td style={{ padding: "12px 16px", fontSize: "12px", color: "#c8c0b4", whiteSpace: "nowrap" }}>
+                          <div style={{ display: "inline-flex", alignItems: "center", gap: "5px", background: "rgba(0,0,0,0.3)", padding: "3px 7px", borderRadius: "4px" }}>
+                            <Clock size={12} style={{ color: "#ffd47c" }} />
+                            <span>{pill.duration}</span>
+                          </div>
+                        </td>
+
+                        {/* Stacking Rule */}
+                        <td style={{ padding: "12px 16px", fontSize: "11px", color: "#a8a094", lineHeight: "1.4" }}>
+                          {pill.stackRule}
+                        </td>
+
+                        {/* Lock Status */}
+                        <td style={{ padding: "12px 16px", textAlign: "center" }}>
+                          {pill.isLocked ? (
+                            <span
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "4px",
+                                fontSize: "11px",
+                                fontWeight: 800,
+                                background: "rgba(231, 76, 60, 0.15)",
+                                color: "#e74c3c",
+                                padding: "4px 8px",
+                                borderRadius: "4px",
+                                border: "1px solid rgba(231, 76, 60, 0.35)",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              <XCircle size={12} /> Cấm Dùng
+                            </span>
+                          ) : (
+                            <span
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "4px",
+                                fontSize: "11px",
+                                fontWeight: 800,
+                                background: "rgba(46, 204, 113, 0.15)",
+                                color: "#2ecc71",
+                                padding: "4px 8px",
+                                borderRadius: "4px",
+                                border: "1px solid rgba(46, 204, 113, 0.35)",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              <CheckCircle2 size={12} /> Cho Phép
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Action Button */}
+                        <td style={{ padding: "12px 16px", textAlign: "center" }}>
+                          <button
+                            type="button"
+                            onClick={() => handleTogglePill(pill)}
+                            disabled={saving}
+                            style={{
+                              background: pill.isLocked
+                                ? "linear-gradient(180deg, #2ecc71, #27ae60)"
+                                : "rgba(231, 76, 60, 0.2)",
+                              color: pill.isLocked ? "#fff" : "#e74c3c",
+                              border: `1px solid ${pill.isLocked ? "#2ecc71" : "rgba(231, 76, 60, 0.45)"}`,
+                              borderRadius: "6px",
+                              padding: "6px 12px",
+                              fontSize: "11px",
+                              fontWeight: 800,
+                              cursor: saving ? "not-allowed" : "pointer",
+                              whiteSpace: "nowrap",
+                              boxShadow: pill.isLocked ? "0 2px 4px rgba(46,204,113,0.3)" : "none",
+                            }}
+                          >
+                            {pill.isLocked ? "Mở Khóa" : "Khóa Dùng"}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
