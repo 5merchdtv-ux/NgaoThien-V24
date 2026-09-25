@@ -14,6 +14,7 @@ import {
   Gamepad2,
   Gift,
   History,
+  Layers,
   LayoutDashboard,
   LockKeyhole,
   LogOut,
@@ -61,6 +62,7 @@ import DropAndEventsTool from "./DropAndEventsTool";
 import { MapsManagementTool } from "./MapsManagementTool";
 import GameCommandsTool from "./GameCommandsTool";
 import KhiCongTool from "./KhiCongTool";
+import PillsManagementTool from "./PillsManagementTool";
 import TheLucChienTool from "./TheLucChienTool";
 import GlobalGmAccess from "./GlobalGmAccess";
 import GmAccountManager from "./GmAccountManager";
@@ -120,6 +122,7 @@ const NAV_ICONS: Record<RouteId, typeof LayoutDashboard> = {
   maps: Compass,
   "game-commands": Terminal,
   "khi-cong": Sparkles,
+  pills: Layers,
   "the-luc-chien": Swords,
   tools: Settings2,
   accounts: UserCog,
@@ -1338,6 +1341,10 @@ function DashboardShell({ username }: { username: string }) {
               </div>
               <KhiCongTool />
             </section>
+          ) : null}
+
+          {!loading && data && view === "pills" ? (
+            <PillsManagementTool />
           ) : null}
 
           {!loading && data && view === "the-luc-chien" ? (

@@ -16,6 +16,7 @@ export type RouteId =
   | "maps"
   | "game-commands"
   | "khi-cong"
+  | "pills"
   | "the-luc-chien"
   | "tools"
   | "accounts"
@@ -132,6 +133,14 @@ export const ROUTES: RouteDef[] = [
     label: "Khí công",
     mota: "Tra cứu khí công 13 nghề: tên, icon, cách hoạt động và trạng thái công thức (đã sửa/lỗi/chết).",
     nhom: "dieu-hanh",
+  },
+  {
+    id: "pills",
+    path: "/quan-ly-pill",
+    label: "Quản Lý Pill & Buff",
+    mota: "Toàn bộ pill game & Cash Shop, công tắc Bật/Khóa xài, cơ chế cắn trùng và sơ đồ ma trận cộng dồn.",
+    nhom: "dieu-hanh",
+    coTimKiem: true,
   },
   {
     id: "the-luc-chien",
