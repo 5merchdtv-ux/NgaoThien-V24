@@ -150,6 +150,16 @@ function getGroupBadgeColor(groupId: string): { bg: string; border: string; text
       return { bg: "rgba(192, 57, 43, 0.15)", border: "rgba(192, 57, 43, 0.4)", text: "#e74c3c" };
     case "Group_TuiVoHoangTe":
       return { bg: "rgba(218, 165, 32, 0.2)", border: "rgba(218, 165, 32, 0.5)", text: "#ffd47c" };
+    case "Group_TlcBonus":
+      return { bg: "rgba(230, 126, 34, 0.2)", border: "rgba(230, 126, 34, 0.5)", text: "#e67e22" };
+    case "Group_ExpHoTam":
+      return { bg: "rgba(241, 196, 15, 0.2)", border: "rgba(241, 196, 15, 0.5)", text: "#f1c40f" };
+    case "Group_HoaDuongDan":
+      return { bg: "rgba(231, 76, 60, 0.2)", border: "rgba(231, 76, 60, 0.5)", text: "#ff7675" };
+    case "Group_HealerBuff":
+      return { bg: "rgba(46, 204, 113, 0.2)", border: "rgba(46, 204, 113, 0.5)", text: "#2ecc71" };
+    case "Group_ArcherArrows":
+      return { bg: "rgba(52, 152, 219, 0.2)", border: "rgba(52, 152, 219, 0.5)", text: "#74b9ff" };
     default:
       return { bg: "rgba(230, 174, 78, 0.12)", border: "rgba(230, 174, 78, 0.3)", text: "#ffd47c" };
   }
@@ -1413,7 +1423,7 @@ export default function PillsManagementTool() {
             }}
           >
             <h4 style={{ color: "#ffd47c", margin: "0 0 12px", fontSize: "14px", fontWeight: 700 }}>
-              Bảng Đối Chiếu Xung Đột Từng Cặp Nhóm Buff (13 x 13)
+              Bảng Đối Chiếu Xung Đột Từng Cặp Nhóm Buff (18 x 18)
             </h4>
 
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11px", textAlign: "center" }}>
@@ -1422,36 +1432,46 @@ export default function PillsManagementTool() {
                   <th style={{ padding: "10px", textAlign: "left", color: "#ffd47c", minWidth: "160px" }}>
                     Nhóm Buff
                   </th>
-                  <th title="Chí Tôn Phù (VIP)" style={{ padding: "8px 4px", color: "#ffd47c" }}>1. Phù VIP</th>
-                  <th title="Chí Tôn Hoàn" style={{ padding: "8px 4px", color: "#ffd47c" }}>2. C.Tôn Hoàn</th>
-                  <th title="Cô Điệp Phù" style={{ padding: "8px 4px", color: "#ffd47c" }}>3. Cô Điệp</th>
-                  <th title="Yêu Hoa Thanh Thảo" style={{ padding: "8px 4px", color: "#ffd47c" }}>4. Yêu Hoa</th>
-                  <th title="Chỉ Thêu Long Hổ" style={{ padding: "8px 4px", color: "#ffd47c" }}>5. Chỉ Thêu</th>
-                  <th title="Ma Võ Hải Sản" style={{ padding: "8px 4px", color: "#ffd47c" }}>6. Ma Võ</th>
-                  <th title="Thần Thụ Tâm Pháp" style={{ padding: "8px 4px", color: "#ffd47c" }}>7. Thần Thụ</th>
-                  <th title="Thần Đan Bách Bảo" style={{ padding: "8px 4px", color: "#ffd47c" }}>8. Thần Đan</th>
-                  <th title="EXP & Võ Huân Đan" style={{ padding: "8px 4px", color: "#ffd47c" }}>9. EXP/VH</th>
-                  <th title="Bình HP/MP Auto" style={{ padding: "8px 4px", color: "#ffd47c" }}>10. HP/MP Auto</th>
-                  <th title="Kẹo Hồ Lô & Bánh" style={{ padding: "8px 4px", color: "#ffd47c" }}>11. Kẹo Hồ Lô</th>
-                  <th title="Thuốc Lắc PK" style={{ padding: "8px 4px", color: "#ffd47c" }}>12. Thuốc Lắc</th>
-                  <th title="Túi Võ Hoàng Tệ" style={{ padding: "8px 4px", color: "#ffd47c" }}>13. VHT Tệ</th>
+                  <th title="1. Chí Tôn Phù (VIP)" style={{ padding: "8px 4px", color: "#ffd47c" }}>1. Phù VIP</th>
+                  <th title="2. Chí Tôn Hoàn" style={{ padding: "8px 4px", color: "#ffd47c" }}>2. C.Tôn Hoàn</th>
+                  <th title="3. Cô Điệp Phù" style={{ padding: "8px 4px", color: "#ffd47c" }}>3. Cô Điệp</th>
+                  <th title="4. Yêu Hoa Thanh Thảo" style={{ padding: "8px 4px", color: "#ffd47c" }}>4. Yêu Hoa</th>
+                  <th title="5. Chỉ Thêu Long Hổ" style={{ padding: "8px 4px", color: "#ffd47c" }}>5. Chỉ Thêu</th>
+                  <th title="6. Ma Võ Hải Sản" style={{ padding: "8px 4px", color: "#ffd47c" }}>6. Ma Võ</th>
+                  <th title="7. Thần Thụ Tâm Pháp" style={{ padding: "8px 4px", color: "#ffd47c" }}>7. Thần Thụ</th>
+                  <th title="8. Thần Đan Bách Bảo" style={{ padding: "8px 4px", color: "#ffd47c" }}>8. Thần Đan</th>
+                  <th title="9. EXP & Võ Huân Đan" style={{ padding: "8px 4px", color: "#ffd47c" }}>9. EXP/VH</th>
+                  <th title="10. Bình HP/MP Auto" style={{ padding: "8px 4px", color: "#ffd47c" }}>10. HP/MP</th>
+                  <th title="11. Kẹo Hồ Lô & Bánh" style={{ padding: "8px 4px", color: "#ffd47c" }}>11. Kẹo/Bánh</th>
+                  <th title="12. Thuốc Lắc PK" style={{ padding: "8px 4px", color: "#ffd47c" }}>12. Thuốc Lắc</th>
+                  <th title="13. Túi Võ Hoàng Tệ" style={{ padding: "8px 4px", color: "#ffd47c" }}>13. VHT Tệ</th>
+                  <th title="14. Bùa Thế Lực & Bông TLC" style={{ padding: "8px 4px", color: "#ffd47c" }}>14. Bùa TLC</th>
+                  <th title="15. Hộ Tâm & Hoàng Long (150%-300%)" style={{ padding: "8px 4px", color: "#ffd47c" }}>15. Hộ Tâm</th>
+                  <th title="16. Chí Tôn Hỏa Dương Đơn" style={{ padding: "8px 4px", color: "#ffd47c" }}>16. Hỏa Dương</th>
+                  <th title="17. Dược Thảo & Tiên Dược Đại Phu" style={{ padding: "8px 4px", color: "#ffd47c" }}>17. Đại Phu</th>
+                  <th title="18. Mũi Tên & Cung Tiễn Buff Cung Thủ" style={{ padding: "8px 4px", color: "#ffd47c" }}>18. Cung Tiễn</th>
                 </tr>
               </thead>
               <tbody>
                 {[
-                  { id: "1", name: "1. Chí Tôn Phù (VIP)", matrix: ["🟡", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "⚪"] },
-                  { id: "2", name: "2. Chí Tôn Hoàn", matrix: ["🟢", "🟡", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "⚪"] },
-                  { id: "3", name: "3. Cô Điệp Phù", matrix: ["🟢", "🟢", "🟡", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "⚪"] },
-                  { id: "4", name: "4. Yêu Hoa Thanh Thảo", matrix: ["🟢", "🟢", "🟢", "🟡", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "⚪"] },
-                  { id: "5", name: "5. Chỉ Thêu Long Hổ", matrix: ["🟢", "🟢", "🟢", "🟢", "🟡", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "⚪"] },
-                  { id: "6", name: "6. Ma Võ Hải Sản", matrix: ["🟢", "🟢", "🟢", "🟢", "🟢", "🟡", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "⚪"] },
-                  { id: "7", name: "7. Thần Thụ Tâm Pháp", matrix: ["🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟡", "🟢", "🟢", "🟢", "🟢", "🟢", "⚪"] },
-                  { id: "8", name: "8. Thần Đan Bách Bảo", matrix: ["🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟡", "🟢", "🟢", "🟢", "🟢", "⚪"] },
-                  { id: "9", name: "9. EXP & Võ Huân Đan", matrix: ["🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🔴", "🟢", "🟢", "🟢", "⚪"] },
-                  { id: "10", name: "10. Bình HP/MP Auto", matrix: ["🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🔴", "🟢", "🟢", "⚪"] },
-                  { id: "11", name: "11. Kẹo Hồ Lô & Bánh", matrix: ["🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🔴", "🟢", "⚪"] },
-                  { id: "12", name: "12. Thuốc Lắc PK", matrix: ["🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🔴", "⚪"] },
-                  { id: "13", name: "13. Túi Võ Hoàng Tệ", matrix: ["⚪", "⚪", "⚪", "⚪", "⚪", "⚪", "⚪", "⚪", "⚪", "⚪", "⚪", "⚪", "⚪"] },
+                  { id: "1", name: "1. Chí Tôn Phù (VIP)", matrix: ["🟡", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "⚪", "🟢", "🟢", "🟢", "🟢", "🟢"] },
+                  { id: "2", name: "2. Chí Tôn Hoàn", matrix: ["🟢", "🟡", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "⚪", "🟢", "🟢", "🟢", "🟢", "🟢"] },
+                  { id: "3", name: "3. Cô Điệp Phù", matrix: ["🟢", "🟢", "🟡", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "⚪", "🟢", "🟢", "🟢", "🟢", "🟢"] },
+                  { id: "4", name: "4. Yêu Hoa Thanh Thảo", matrix: ["🟢", "🟢", "🟢", "🟡", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "⚪", "🟢", "🟢", "🟢", "🟢", "🟢"] },
+                  { id: "5", name: "5. Chỉ Thêu Long Hổ", matrix: ["🟢", "🟢", "🟢", "🟢", "🟡", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "⚪", "🟢", "🟢", "🟢", "🟢", "🟢"] },
+                  { id: "6", name: "6. Ma Võ Hải Sản", matrix: ["🟢", "🟢", "🟢", "🟢", "🟢", "🟡", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "⚪", "🟢", "🟢", "🟢", "🟢", "🟢"] },
+                  { id: "7", name: "7. Thần Thụ Tâm Pháp", matrix: ["🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟡", "🟢", "🟢", "🟢", "🟢", "🟢", "⚪", "🟢", "🟢", "🟢", "🟢", "🟢"] },
+                  { id: "8", name: "8. Thần Đan Bách Bảo", matrix: ["🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟡", "🟢", "🟢", "🟢", "🟢", "⚪", "🟢", "🟢", "🟢", "🟢", "🟢"] },
+                  { id: "9", name: "9. EXP & Võ Huân Đan", matrix: ["🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🔴", "🟢", "🟢", "🟢", "⚪", "🟢", "🔴", "🟢", "🟢", "🟢"] },
+                  { id: "10", name: "10. Bình HP/MP Auto", matrix: ["🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🔴", "🟢", "🟢", "⚪", "🟢", "🟢", "🟢", "🟢", "🟢"] },
+                  { id: "11", name: "11. Kẹo Hồ Lô & Bánh", matrix: ["🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🔴", "🟢", "⚪", "🟢", "🟢", "🟢", "🟢", "🟢"] },
+                  { id: "12", name: "12. Thuốc Lắc PK", matrix: ["🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🔴", "⚪", "🟢", "🟢", "🟢", "🟢", "🟢"] },
+                  { id: "13", name: "13. Túi Võ Hoàng Tệ", matrix: ["⚪", "⚪", "⚪", "⚪", "⚪", "⚪", "⚪", "⚪", "⚪", "⚪", "⚪", "⚪", "⚪", "⚪", "⚪", "⚪", "⚪", "⚪"] },
+                  { id: "14", name: "14. Bùa Thế Lực & Bông TLC", matrix: ["🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "⚪", "🟡", "🟢", "🟢", "🟢", "🟢"] },
+                  { id: "15", name: "15. Hộ Tâm & Hoàng Long (150%-300%)", matrix: ["🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🔴", "🟢", "🟢", "🟢", "⚪", "🟢", "🟡", "🟢", "🟢", "🟢"] },
+                  { id: "16", name: "16. Chí Tôn Hỏa Dương Đơn", matrix: ["🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "⚪", "🟢", "🟢", "🟡", "🟢", "🟢"] },
+                  { id: "17", name: "17. Dược Thảo & Tiên Dược Đại Phu", matrix: ["🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "⚪", "🟢", "🟢", "🟢", "🟡", "🟢"] },
+                  { id: "18", name: "18. Mũi Tên & Cung Tiễn Buff Cung Thủ", matrix: ["🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "🟢", "⚪", "🟢", "🟢", "🟢", "🟢", "⚪"] },
                 ].map((row, rIdx) => (
                   <tr
                     key={row.id}
