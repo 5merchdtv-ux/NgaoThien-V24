@@ -25,7 +25,30 @@ import {
   ArrowRightLeft,
   ChevronDown,
   Store,
+  MapPin,
+  HelpCircle,
+  Coins,
+  Compass,
+  FileText,
+  Calendar,
+  ExternalLink,
 } from "lucide-react";
+
+interface PillLocation {
+  type: string;
+  targetName: string;
+  mapName: string;
+  costOrRate: string;
+  details: string;
+}
+
+interface PillSourceDetail {
+  mainSource: string;
+  locations: PillLocation[];
+  eventInfo: string;
+  howToGet: string;
+  stackingTips: string;
+}
 
 interface PillItem {
   pid: number;
@@ -40,6 +63,7 @@ interface PillItem {
   stackRule: string;
   isLocked: boolean;
   price: number;
+  sourceDetail?: PillSourceDetail;
 }
 
 interface PillGroup {
@@ -61,15 +85,15 @@ interface ApiResponse {
   groups?: PillGroup[];
 }
 
-function PillIconThumbnail({ pid, name }: { pid: number; name: string }) {
+function PillIconThumbnail({ pid, name, size = 44 }: { pid: number; name: string; size?: number }) {
   const [broken, setBroken] = useState(false);
 
   return (
     <div
       style={{
-        width: "44px",
-        height: "44px",
-        minWidth: "44px",
+        width: `${size}px`,
+        height: `${size}px`,
+        minWidth: `${size}px`,
         borderRadius: "8px",
         background: "radial-gradient(circle, rgba(45, 33, 20, 0.95) 0%, rgba(12, 10, 7, 0.98) 100%)",
         border: "1.5px solid rgba(230, 174, 78, 0.45)",
@@ -86,8 +110,8 @@ function PillIconThumbnail({ pid, name }: { pid: number; name: string }) {
       <img
         src={broken ? "/item-icons/0.jpg" : `/item-icons/${pid}.jpg`}
         alt={name}
-        width={36}
-        height={36}
+        width={size - 8}
+        height={size - 8}
         loading="lazy"
         onError={() => setBroken(true)}
         style={{
@@ -143,6 +167,9 @@ export default function PillsManagementTool() {
   const [selectedSource, setSelectedSource] = useState<string>("all");
   const [selectedLockStatus, setSelectedLockStatus] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
+
+  // Modal State
+  const [modalPill, setModalPill] = useState<PillItem | null>(null);
 
   // Target Channel for Reload
   const [targetChannel, setTargetChannel] = useState<number>(2);
@@ -943,7 +970,7 @@ export default function PillsManagementTool() {
                   <th style={{ padding: "14px 16px", minWidth: "300px" }}>Vật Phẩm Pill</th>
                   <th style={{ padding: "14px 16px", width: "110px" }}>PID</th>
                   <th style={{ padding: "14px 16px" }}>Nhóm Buff</th>
-                  <th style={{ padding: "14px 16px" }}>Nguồn Gốc</th>
+                  <th style={{ padding: "14px 16px" }}>Nguồn Gốc (Bấm xem chi tiết)</th>
                   <th style={{ padding: "14px 16px", minWidth: "220px" }}>Tác Dụng & Chỉ Số</th>
                   <th style={{ padding: "14px 16px", width: "120px" }}>Thời Hạn</th>
                   <th style={{ padding: "14px 16px", minWidth: "220px" }}>Cơ Chế Cắn Trùng</th>
@@ -1033,66 +1060,123 @@ export default function PillsManagementTool() {
                           </span>
                         </td>
 
-                        {/* Source */}
+                        {/* Source (Clickable to open detailed Modal) */}
                         <td style={{ padding: "12px 16px" }}>
-                          {pill.isCashShop ? (
-                            <span
-                              style={{
-                                fontSize: "11px",
-                                background: "rgba(241, 196, 15, 0.15)",
-                                color: "#f1c40f",
-                                padding: "3px 8px",
-                                borderRadius: "4px",
-                                border: "1px solid rgba(241, 196, 15, 0.35)",
-                                fontWeight: 700,
-                                display: "inline-flex",
-                                alignItems: "center",
-                                gap: "4px",
-                                whiteSpace: "nowrap",
-                              }}
-                            >
-                              <ShoppingBag size={11} />
-                              Bách Bảo Các
-                            </span>
-                          ) : pill.source.includes("NPC") ? (
-                            <span
-                              style={{
-                                fontSize: "11px",
-                                background: "rgba(26, 188, 156, 0.15)",
-                                color: "#1abc9c",
-                                padding: "3px 8px",
-                                borderRadius: "4px",
-                                border: "1px solid rgba(26, 188, 156, 0.35)",
-                                fontWeight: 600,
-                                display: "inline-flex",
-                                alignItems: "center",
-                                gap: "4px",
-                                whiteSpace: "nowrap",
-                              }}
-                            >
-                              <Store size={11} />
-                              Shop NPC
-                            </span>
-                          ) : (
-                            <span
-                              style={{
-                                fontSize: "11px",
-                                background: "rgba(52, 152, 219, 0.15)",
-                                color: "#3498db",
-                                padding: "3px 8px",
-                                borderRadius: "4px",
-                                border: "1px solid rgba(52, 152, 219, 0.35)",
-                                fontWeight: 600,
-                                display: "inline-flex",
-                                alignItems: "center",
-                                gap: "4px",
-                                whiteSpace: "nowrap",
-                              }}
-                            >
-                              <Swords size={11} />
-                              {pill.source}
-                            </span>
-                          )}
+                          <button
+                            type="button"
+                            onClick={() => setModalPill(pill)}
+                            style={{
+                              background: "transparent",
+                              border: "none",
+                              padding: 0,
+                              cursor: "pointer",
+                              textAlign: "left",
+                            }}
+                            title="Bấm để xem phân tích chi tiết nơi mua, bãi drop & sự kiện"
+                          >
+                            {pill.isCashShop ? (
+                              <span
+                                style={{
+                                  fontSize: "11px",
+                                  background: "rgba(241, 196, 15, 0.15)",
+                                  color: "#f1c40f",
+                                  padding: "4px 10px",
+                                  borderRadius: "6px",
+                                  border: "1px solid rgba(241, 196, 15, 0.4)",
+                                  fontWeight: 700,
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "5px",
+                                  whiteSpace: "nowrap",
+                                  transition: "transform 0.15s ease",
+                                }}
+                              >
+                                <ShoppingBag size={12} />
+                                Bách Bảo Các
+                                <ExternalLink size={10} style={{ opacity: 0.7 }} />
+                              </span>
+                            ) : pill.source.includes("NPC") ? (
+                              <span
+                                style={{
+                                  fontSize: "11px",
+                                  background: "rgba(26, 188, 156, 0.15)",
+                                  color: "#1abc9c",
+                                  padding: "4px 10px",
+                                  borderRadius: "6px",
+                                  border: "1px solid rgba(26, 188, 156, 0.4)",
+                                  fontWeight: 600,
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "5px",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                <Store size={12} />
+                                Shop NPC
+                                <ExternalLink size={10} style={{ opacity: 0.7 }} />
+                              </span>
+                            ) : pill.source.includes("Boss") ? (
+                              <span
+                                style={{
+                                  fontSize: "11px",
+                                  background: "rgba(231, 76, 60, 0.15)",
+                                  color: "#ff6b6b",
+                                  padding: "4px 10px",
+                                  borderRadius: "6px",
+                                  border: "1px solid rgba(231, 76, 60, 0.4)",
+                                  fontWeight: 600,
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "5px",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                <Flame size={12} />
+                                Boss Drop / Event
+                                <ExternalLink size={10} style={{ opacity: 0.7 }} />
+                              </span>
+                            ) : pill.source.includes("Hộp") ? (
+                              <span
+                                style={{
+                                  fontSize: "11px",
+                                  background: "rgba(155, 89, 182, 0.15)",
+                                  color: "#9b59b6",
+                                  padding: "4px 10px",
+                                  borderRadius: "6px",
+                                  border: "1px solid rgba(155, 89, 182, 0.4)",
+                                  fontWeight: 600,
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "5px",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                <Package size={12} />
+                                Mở Từ Hộp Báu
+                                <ExternalLink size={10} style={{ opacity: 0.7 }} />
+                              </span>
+                            ) : (
+                              <span
+                                style={{
+                                  fontSize: "11px",
+                                  background: "rgba(52, 152, 219, 0.15)",
+                                  color: "#3498db",
+                                  padding: "4px 10px",
+                                  borderRadius: "6px",
+                                  border: "1px solid rgba(52, 152, 219, 0.4)",
+                                  fontWeight: 600,
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "5px",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                <Swords size={12} />
+                                {pill.source}
+                                <ExternalLink size={10} style={{ opacity: 0.7 }} />
+                              </span>
+                            )}
+                          </button>
                         </td>
 
                         {/* Effect */}
@@ -1552,6 +1636,322 @@ export default function PillsManagementTool() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* POPUP MODAL: CHI TIẾT NGUỒN GỐC & HƯỚNG DẪN SỞ HỮU */}
+      {modalPill && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 9999,
+            background: "rgba(0, 0, 0, 0.78)",
+            backdropFilter: "blur(4px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "20px",
+          }}
+          onClick={() => setModalPill(null)}
+        >
+          <div
+            style={{
+              background: "rgba(22, 17, 13, 0.98)",
+              border: "1px solid rgba(230, 174, 78, 0.4)",
+              borderRadius: "14px",
+              width: "100%",
+              maxWidth: "760px",
+              maxHeight: "90vh",
+              overflowY: "auto",
+              boxShadow: "0 20px 50px rgba(0,0,0,0.8)",
+              display: "flex",
+              flexDirection: "column",
+              color: "#f7f3ea",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div
+              style={{
+                padding: "20px 24px",
+                borderBottom: "1px solid rgba(230, 174, 78, 0.2)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                background: "rgba(12, 9, 6, 0.9)",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                <PillIconThumbnail pid={modalPill.pid} name={modalPill.name} size={54} />
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+                    <span
+                      style={{
+                        fontFamily: "monospace",
+                        fontSize: "12px",
+                        fontWeight: 700,
+                        color: "#ffd47c",
+                        background: "rgba(230, 174, 78, 0.15)",
+                        border: "1px solid rgba(230, 174, 78, 0.3)",
+                        padding: "2px 6px",
+                        borderRadius: "4px",
+                      }}
+                    >
+                      PID: {modalPill.pid}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        ...getGroupBadgeColor(modalPill.groupId),
+                        padding: "2px 8px",
+                        borderRadius: "4px",
+                        border: `1px solid ${getGroupBadgeColor(modalPill.groupId).border}`,
+                      }}
+                    >
+                      {modalPill.groupName}
+                    </span>
+                  </div>
+                  <h2 style={{ fontSize: "20px", fontWeight: 800, margin: 0, color: "#fff" }}>
+                    {modalPill.name}
+                  </h2>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setModalPill(null)}
+                style={{
+                  background: "rgba(255, 255, 255, 0.08)",
+                  border: "1px solid rgba(230, 174, 78, 0.2)",
+                  color: "#ddd5ca",
+                  borderRadius: "8px",
+                  padding: "8px",
+                  cursor: "pointer",
+                }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div style={{ padding: "24px", display: "flex", flexDirection: "column", gap: "20px" }}>
+              {/* Effect & Duration Overview */}
+              <div
+                style={{
+                  background: "rgba(10, 8, 6, 0.7)",
+                  border: "1px solid rgba(230, 174, 78, 0.2)",
+                  borderRadius: "10px",
+                  padding: "16px",
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "14px",
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: "12px", color: "#ffd47c", fontWeight: 700, marginBottom: "4px", display: "flex", alignItems: "center", gap: "5px" }}>
+                    <Sparkles size={14} /> Tác dụng & Chỉ số:
+                  </div>
+                  <div style={{ fontSize: "13px", color: "#f7f3ea", lineHeight: "1.5" }}>
+                    {modalPill.effectDescription}
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ fontSize: "12px", color: "#ffd47c", fontWeight: 700, marginBottom: "4px", display: "flex", alignItems: "center", gap: "5px" }}>
+                    <Clock size={14} /> Thời hạn hiệu lực:
+                  </div>
+                  <div style={{ fontSize: "13px", color: "#f7f3ea" }}>
+                    {modalPill.duration}
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 1: NƠI BÁN / NƠI XUẤT HIỆN / BÃI DROP */}
+              <div>
+                <h4 style={{ fontSize: "15px", fontWeight: 800, color: "#ffd47c", margin: "0 0 10px", display: "flex", alignItems: "center", gap: "8px" }}>
+                  <MapPin size={17} /> Chi Tiết Nơi Bán & Điểm Drop Trong Game
+                </h4>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                  {modalPill.sourceDetail?.locations && modalPill.sourceDetail.locations.length > 0 ? (
+                    modalPill.sourceDetail.locations.map((loc, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          background: "rgba(28, 23, 18, 0.96)",
+                          border: "1px solid rgba(230, 174, 78, 0.2)",
+                          borderRadius: "8px",
+                          padding: "14px",
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "6px",
+                        }}
+                      >
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <span
+                            style={{
+                              fontSize: "12px",
+                              fontWeight: 700,
+                              background: "rgba(52, 152, 219, 0.15)",
+                              color: "#3498db",
+                              border: "1px solid rgba(52, 152, 219, 0.35)",
+                              padding: "2px 8px",
+                              borderRadius: "4px",
+                            }}
+                          >
+                            {loc.type}
+                          </span>
+                          <strong style={{ color: "#ffd47c", fontSize: "13px" }}>
+                            {loc.costOrRate}
+                          </strong>
+                        </div>
+
+                        <div style={{ fontSize: "14px", fontWeight: 700, color: "#fff" }}>
+                          {loc.targetName}
+                        </div>
+
+                        <div style={{ fontSize: "12px", color: "#c8c0b4", display: "flex", alignItems: "center", gap: "4px" }}>
+                          <Compass size={13} style={{ color: "#2ecc71" }} />
+                          Vị trí / Bản đồ: <span style={{ color: "#2ecc71", fontWeight: 600 }}>{loc.mapName}</span>
+                        </div>
+
+                        <div style={{ fontSize: "12px", color: "#a8a094", marginTop: "2px", lineHeight: "1.4" }}>
+                          {loc.details}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div style={{ padding: "14px", background: "rgba(0,0,0,0.3)", borderRadius: "8px", fontSize: "13px", color: "#c8c0b4" }}>
+                      Vật phẩm rơi từ quái train dã ngoại hoặc nhận qua các sự kiện in-game.
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* SECTION 2: THÔNG TIN SỰ KIỆN NẾU CÓ */}
+              {modalPill.sourceDetail?.eventInfo && (
+                <div
+                  style={{
+                    background: "rgba(241, 196, 15, 0.08)",
+                    border: "1px solid rgba(241, 196, 15, 0.25)",
+                    borderRadius: "8px",
+                    padding: "14px 16px",
+                  }}
+                >
+                  <h4 style={{ fontSize: "14px", fontWeight: 800, color: "#f1c40f", margin: "0 0 6px", display: "flex", alignItems: "center", gap: "6px" }}>
+                    <Calendar size={15} /> Sự Kiện Liên Quan & Khung Giờ
+                  </h4>
+                  <p style={{ margin: 0, fontSize: "13px", color: "#e8dfd1", lineHeight: "1.5" }}>
+                    {modalPill.sourceDetail.eventInfo}
+                  </p>
+                </div>
+              )}
+
+              {/* SECTION 3: HƯỚNG DẪN SỞ HỮU CHI TIẾT */}
+              {modalPill.sourceDetail?.howToGet && (
+                <div>
+                  <h4 style={{ fontSize: "15px", fontWeight: 800, color: "#ffd47c", margin: "0 0 8px", display: "flex", alignItems: "center", gap: "8px" }}>
+                    <FileText size={16} /> Hướng Dẫn Sở Hữu & Mua Trong Game
+                  </h4>
+                  <div
+                    style={{
+                      background: "rgba(28, 23, 18, 0.96)",
+                      border: "1px solid rgba(230, 174, 78, 0.2)",
+                      borderRadius: "8px",
+                      padding: "14px 16px",
+                      fontSize: "13px",
+                      color: "#ddd5ca",
+                      lineHeight: "1.6",
+                    }}
+                  >
+                    {modalPill.sourceDetail.howToGet}
+                  </div>
+                </div>
+              )}
+
+              {/* SECTION 4: LỜI KHUYÊN PHỐI HỢP BUFF */}
+              {modalPill.sourceDetail?.stackingTips && (
+                <div
+                  style={{
+                    background: "rgba(46, 204, 113, 0.08)",
+                    border: "1px solid rgba(46, 204, 113, 0.25)",
+                    borderRadius: "8px",
+                    padding: "14px 16px",
+                  }}
+                >
+                  <h4 style={{ fontSize: "14px", fontWeight: 800, color: "#2ecc71", margin: "0 0 6px", display: "flex", alignItems: "center", gap: "6px" }}>
+                    <ShieldCheck size={15} /> Lời Khuyên Phối Hợp & Cộng Dồn Buff
+                  </h4>
+                  <p style={{ margin: 0, fontSize: "13px", color: "#d5ecd9", lineHeight: "1.5" }}>
+                    {modalPill.sourceDetail.stackingTips}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div
+              style={{
+                padding: "16px 24px",
+                borderTop: "1px solid rgba(230, 174, 78, 0.2)",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                background: "rgba(12, 9, 6, 0.9)",
+              }}
+            >
+              <div style={{ fontSize: "12px", color: "#91887d" }}>
+                Trạng thái hiện tại:{" "}
+                <span style={{ color: modalPill.isLocked ? "#e74c3c" : "#2ecc71", fontWeight: 700 }}>
+                  {modalPill.isLocked ? "Đang bị khóa cấm dùng" : "Đang cho phép sử dụng bình thường"}
+                </span>
+              </div>
+
+              <div style={{ display: "flex", gap: "10px" }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleTogglePill(modalPill);
+                    setModalPill((prev) => prev ? { ...prev, isLocked: !prev.isLocked } : null);
+                  }}
+                  disabled={saving}
+                  style={{
+                    background: modalPill.isLocked
+                      ? "linear-gradient(180deg, #2ecc71, #27ae60)"
+                      : "rgba(231, 76, 60, 0.2)",
+                    color: modalPill.isLocked ? "#fff" : "#e74c3c",
+                    border: `1px solid ${modalPill.isLocked ? "#2ecc71" : "rgba(231, 76, 60, 0.45)"}`,
+                    borderRadius: "6px",
+                    padding: "8px 16px",
+                    fontSize: "12px",
+                    fontWeight: 800,
+                    cursor: saving ? "not-allowed" : "pointer",
+                  }}
+                >
+                  {modalPill.isLocked ? "Mở Cho Phép Dùng" : "Khóa Cấm Dùng"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setModalPill(null)}
+                  style={{
+                    background: "rgba(255, 255, 255, 0.08)",
+                    border: "1px solid rgba(230, 174, 78, 0.25)",
+                    color: "#ddd5ca",
+                    borderRadius: "6px",
+                    padding: "8px 16px",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  Đóng
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
