@@ -98,6 +98,77 @@ type GameEvent = {
   secondaryRewards?: EventRewardSummary | null;
 };
 
+const TIER_BOXES_CONFIG: Record<string, { pid: number; name: string; type: string; typeBadge: string; badgeColor: string; level: number }[]> = {
+  "11x": [
+    { pid: 1008005001, name: "Hộp Vũ Khí Cấp 110", type: "Vũ Khí", typeBadge: "🗡️ Vũ Khí", badgeColor: "#f87171", level: 110 },
+    { pid: 1008005002, name: "Hộp Y Phục Cấp 110", type: "Y Phục", typeBadge: "🥋 Y Phục", badgeColor: "#60a5fa", level: 110 },
+    { pid: 1008005003, name: "Hộp Hộ Thủ Cấp 110", type: "Hộ Thủ", typeBadge: "🥊 Hộ Thủ", badgeColor: "#c084fc", level: 110 },
+    { pid: 1008005004, name: "Hộp Chiến Ủng Cấp 110", type: "Chiến Ủng", typeBadge: "👢 Chiến Ủng", badgeColor: "#38bdf8", level: 110 },
+    { pid: 1008005005, name: "Hộp Nội Giáp Cấp 110", type: "Nội Giáp", typeBadge: "🛡️ Nội Giáp", badgeColor: "#fbbf24", level: 110 },
+    { pid: 1008005006, name: "Hộp Bí Tịch Thăng Thiên 1", type: "Bí Tịch", typeBadge: "📜 Bí Tịch", badgeColor: "#4ade80", level: 110 },
+  ],
+  "12x": [
+    { pid: 1008005011, name: "Hộp Vũ Khí Cấp 120", type: "Vũ Khí", typeBadge: "🗡️ Vũ Khí", badgeColor: "#f87171", level: 120 },
+    { pid: 1008005012, name: "Hộp Y Phục Cấp 120", type: "Y Phục", typeBadge: "🥋 Y Phục", badgeColor: "#60a5fa", level: 120 },
+    { pid: 1008005013, name: "Hộp Hộ Thủ Cấp 120", type: "Hộ Thủ", typeBadge: "🥊 Hộ Thủ", badgeColor: "#c084fc", level: 120 },
+    { pid: 1008005014, name: "Hộp Chiến Ủng Cấp 120", type: "Chiến Ủng", typeBadge: "👢 Chiến Ủng", badgeColor: "#38bdf8", level: 120 },
+    { pid: 1008005015, name: "Hộp Nội Giáp Cấp 120", type: "Nội Giáp", typeBadge: "🛡️ Nội Giáp", badgeColor: "#fbbf24", level: 120 },
+    { pid: 1008005016, name: "Hộp Bí Tịch Thăng Thiên 2", type: "Bí Tịch", typeBadge: "📜 Bí Tịch", badgeColor: "#4ade80", level: 120 },
+  ],
+  "13x": [
+    { pid: 1008005021, name: "Hộp Vũ Khí Cấp 130", type: "Vũ Khí", typeBadge: "🗡️ Vũ Khí", badgeColor: "#f87171", level: 130 },
+    { pid: 1008005022, name: "Hộp Y Phục Cấp 130", type: "Y Phục", typeBadge: "🥋 Y Phục", badgeColor: "#60a5fa", level: 130 },
+    { pid: 1008005023, name: "Hộp Hộ Thủ Cấp 130", type: "Hộ Thủ", typeBadge: "🥊 Hộ Thủ", badgeColor: "#c084fc", level: 130 },
+    { pid: 1008005024, name: "Hộp Chiến Ủng Cấp 130", type: "Chiến Ủng", typeBadge: "👢 Chiến Ủng", badgeColor: "#38bdf8", level: 130 },
+    { pid: 1008005025, name: "Hộp Nội Giáp Cấp 130", type: "Nội Giáp", typeBadge: "🛡️ Nội Giáp", badgeColor: "#fbbf24", level: 130 },
+    { pid: 1008005026, name: "Hộp Bí Tịch Thăng Thiên 3", type: "Bí Tịch", typeBadge: "📜 Bí Tịch", badgeColor: "#4ade80", level: 130 },
+  ],
+  "14x": [
+    { pid: 1008005031, name: "Hộp Vũ Khí Cấp 140", type: "Vũ Khí", typeBadge: "🗡️ Vũ Khí", badgeColor: "#f87171", level: 140 },
+    { pid: 1008005032, name: "Hộp Y Phục Cấp 140", type: "Y Phục", typeBadge: "🥋 Y Phục", badgeColor: "#60a5fa", level: 140 },
+    { pid: 1008005033, name: "Hộp Hộ Thủ Cấp 140", type: "Hộ Thủ", typeBadge: "🥊 Hộ Thủ", badgeColor: "#c084fc", level: 140 },
+    { pid: 1008005034, name: "Hộp Chiến Ủng Cấp 140", type: "Chiến Ủng", typeBadge: "👢 Chiến Ủng", badgeColor: "#38bdf8", level: 140 },
+    { pid: 1008005035, name: "Hộp Nội Giáp Cấp 140", type: "Nội Giáp", typeBadge: "🛡️ Nội Giáp", badgeColor: "#fbbf24", level: 140 },
+    { pid: 1008005036, name: "Hộp Bí Tịch Thăng Thiên 4", type: "Bí Tịch", typeBadge: "📜 Bí Tịch", badgeColor: "#4ade80", level: 140 },
+  ],
+  "15x": [
+    { pid: 1008005041, name: "Hộp Vũ Khí Cấp 150", type: "Vũ Khí", typeBadge: "🗡️ Vũ Khí", badgeColor: "#f87171", level: 150 },
+    { pid: 1008005042, name: "Hộp Y Phục Cấp 150", type: "Y Phục", typeBadge: "🥋 Y Phục", badgeColor: "#60a5fa", level: 150 },
+    { pid: 1008005043, name: "Hộp Hộ Thủ Cấp 150", type: "Hộ Thủ", typeBadge: "🥊 Hộ Thủ", badgeColor: "#c084fc", level: 150 },
+    { pid: 1008005044, name: "Hộp Chiến Ủng Cấp 150", type: "Chiến Ủng", typeBadge: "👢 Chiến Ủng", badgeColor: "#38bdf8", level: 150 },
+    { pid: 1008005045, name: "Hộp Nội Giáp Cấp 150", type: "Nội Giáp", typeBadge: "🛡️ Nội Giáp", badgeColor: "#fbbf24", level: 150 },
+    { pid: 1008005046, name: "Hộp Bí Tịch Thăng Thiên 5", type: "Bí Tịch", typeBadge: "📜 Bí Tịch", badgeColor: "#4ade80", level: 150 },
+  ],
+  "16x": [
+    { pid: 1008005051, name: "Hộp Vũ Khí Cấp 160", type: "Vũ Khí", typeBadge: "🗡️ Vũ Khí", badgeColor: "#f87171", level: 160 },
+    { pid: 1008005052, name: "Hộp Y Phục Cấp 160", type: "Y Phục", typeBadge: "🥋 Y Phục", badgeColor: "#60a5fa", level: 160 },
+    { pid: 1008005053, name: "Hộp Hộ Thủ Cấp 160", type: "Hộ Thủ", typeBadge: "🥊 Hộ Thủ", badgeColor: "#c084fc", level: 160 },
+    { pid: 1008005054, name: "Hộp Chiến Ủng Cấp 160", type: "Chiến Ủng", typeBadge: "👢 Chiến Ủng", badgeColor: "#38bdf8", level: 160 },
+    { pid: 1008005055, name: "Hộp Nội Giáp Cấp 160", type: "Nội Giáp", typeBadge: "🛡️ Nội Giáp", badgeColor: "#fbbf24", level: 160 },
+    { pid: 1008005056, name: "Hộp Bí Tịch Thăng Thiên 6", type: "Bí Tịch", typeBadge: "📜 Bí Tịch", badgeColor: "#4ade80", level: 160 },
+  ],
+  "17x": [
+    { pid: 1008005061, name: "Hộp Vũ Khí Cấp 170", type: "Vũ Khí", typeBadge: "🗡️ Vũ Khí", badgeColor: "#f87171", level: 170 },
+    { pid: 1008005062, name: "Hộp Y Phục Cấp 170", type: "Y Phục", typeBadge: "🥋 Y Phục", badgeColor: "#60a5fa", level: 170 },
+    { pid: 1008005063, name: "Hộp Hộ Thủ Cấp 170", type: "Hộ Thủ", typeBadge: "🥊 Hộ Thủ", badgeColor: "#c084fc", level: 170 },
+    { pid: 1008005064, name: "Hộp Chiến Ủng Cấp 170", type: "Chiến Ủng", typeBadge: "👢 Chiến Ủng", badgeColor: "#38bdf8", level: 170 },
+    { pid: 1008005065, name: "Hộp Nội Giáp Cấp 170", type: "Nội Giáp", typeBadge: "🛡️ Nội Giáp", badgeColor: "#fbbf24", level: 170 },
+    { pid: 1008005066, name: "Hộp Bí Tịch Thăng Thiên 7", type: "Bí Tịch", typeBadge: "📜 Bí Tịch", badgeColor: "#4ade80", level: 170 },
+  ],
+  "others": [
+    { pid: 1008000216, name: "Chìa Khóa Vàng", type: "Khóa", typeBadge: "🔑 Khóa", badgeColor: "#ffd47c", level: 1 },
+    { pid: 1000000899, name: "Thiết Chùy", type: "Công Cụ", typeBadge: "🔨 Búa", badgeColor: "#a3a3a3", level: 1 },
+    { pid: 1000000426, name: "Phong Ấn Bảo Rương", type: "Rương", typeBadge: "📦 Rương", badgeColor: "#fb923c", level: 1 },
+    { pid: 1000000071, name: "Thượng Cổ Bảo Rương", type: "Rương", typeBadge: "📦 Rương", badgeColor: "#a855f7", level: 1 },
+    { pid: 1000000006, name: "Càn Khôn Hộp (Yisabu)", type: "Hộp", typeBadge: "🎁 Hộp", badgeColor: "#ec4899", level: 1 },
+    { pid: 1000000251, name: "Hộp Băng Linh (Áo Choàng)", type: "Áo Choàng", typeBadge: "❄️ Áo Choàng", badgeColor: "#38bdf8", level: 1 },
+    { pid: 1000000461, name: "Hộp May Mắn (Nhỏ)", type: "Sự Kiện", typeBadge: "🎁 Sự Kiện", badgeColor: "#f43f5e", level: 1 },
+    { pid: 1000000462, name: "Hộp May Mắn (Lớn)", type: "Sự Kiện", typeBadge: "🎁 Sự Kiện", badgeColor: "#e11d48", level: 1 },
+    { pid: 1000000027, name: "Hộp Thanh Ngọc", type: "Báu Vật", typeBadge: "💎 Ngọc", badgeColor: "#2dd4bf", level: 1 },
+    { pid: 1000000009, name: "Túi Quà Tân Thủ", type: "Tân Thủ", typeBadge: "🎒 Tân Thủ", badgeColor: "#22c55e", level: 1 },
+  ],
+};
+
 export default function DropAndEventsTool() {
   const [tab, setTab] = useState<"rates" | "drops" | "events" | "boxes">("rates");
   const [loading, setLoading] = useState(true);
@@ -176,7 +247,8 @@ export default function DropAndEventsTool() {
   };
 
   const [boxesList, setBoxesList] = useState<BoxHeader[]>([]);
-  const [selectedBoxPid, setSelectedBoxPid] = useState<number>(1000001051);
+  const [boxTierTab, setBoxTierTab] = useState<string>("11x");
+  const [selectedBoxPid, setSelectedBoxPid] = useState<number>(1008005001);
   const [selectedBoxHeader, setSelectedBoxHeader] = useState<BoxHeader | null>(null);
   const [boxRewards, setBoxRewards] = useState<BoxRewardItem[]>([]);
   const [boxLoading, setBoxLoading] = useState(false);
@@ -2301,55 +2373,181 @@ export default function DropAndEventsTool() {
               </div>
             </div>
 
-            {/* Quick Box Buttons */}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {/* Level Tier Selection Tabs */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, borderBottom: "1px solid rgba(230, 174, 78, 0.2)", paddingBottom: 10 }}>
               {[
-                { pid: 1000001051, label: "🗡️ Hộp Vũ Khí (110-160)", badge: "Weapon" },
-                { pid: 1000001058, label: "🥋 Hộp Y Phục (110-160)", badge: "Armor" },
-                { pid: 1000001066, label: "🥊 Hộp Hộ Thủ (110-160)", badge: "Gloves" },
-                { pid: 1000001067, label: "👢 Hộp Chiến Ủng (110-160)", badge: "Boots" },
-                { pid: 1000001068, label: "🛡️ Hộp Nội Giáp (110-160)", badge: "Inner" },
-                { pid: 1008000216, label: "🔑 Chìa Khóa Vàng", badge: "Key" },
-                { pid: 1000000899, label: "🔨 Thiết Chùy", badge: "Hammer" },
-                { pid: 1000000251, label: "❄️ Hộp Băng Linh", badge: "Costume" },
-                { pid: 1000000461, label: "🎁 Hộp May Mắn (Nhỏ)", badge: "Event" },
-                { pid: 1000000462, label: "🎁 Hộp May Mắn (Lớn)", badge: "Event" },
-                { pid: 1000000027, label: "💎 Hộp Thanh Ngọc", badge: "Treasure" },
-                { pid: 1000000009, label: "🎒 Túi Quà Tân Thủ", badge: "Newbie" },
-              ].map((item) => {
-                const isActive = selectedBoxPid === item.pid;
+                { id: "11x", label: "🌟 Cấp 11x (110)", count: "6 Hộp" },
+                { id: "12x", label: "🌟 Cấp 12x (120)", count: "6 Hộp" },
+                { id: "13x", label: "🌟 Cấp 13x (130)", count: "6 Hộp" },
+                { id: "14x", label: "🌟 Cấp 14x (140)", count: "6 Hộp" },
+                { id: "15x", label: "🌟 Cấp 15x (150)", count: "6 Hộp" },
+                { id: "16x", label: "🌟 Cấp 16x (160)", count: "6 Hộp" },
+                { id: "17x", label: "🌟 Cấp 17x (170)", count: "6 Hộp" },
+                { id: "all42", label: "📦 Tất Cả 42 Hộp Phân Cấp", count: "42 Hộp" },
+                { id: "others", label: "🔑 Rương & Khóa Khác", count: "10 Loại" },
+              ].map((t) => {
+                const isTabActive = boxTierTab === t.id;
                 return (
                   <button
-                    key={item.pid}
+                    key={t.id}
                     type="button"
-                    onClick={() => setSelectedBoxPid(item.pid)}
+                    onClick={() => setBoxTierTab(t.id)}
                     style={{
                       display: "flex",
                       alignItems: "center",
                       gap: 6,
-                      padding: "6px 12px",
+                      padding: "8px 14px",
                       borderRadius: 8,
-                      fontSize: 12.5,
-                      fontWeight: isActive ? 800 : 600,
-                      background: isActive
+                      fontSize: 13,
+                      fontWeight: isTabActive ? 800 : 600,
+                      background: isTabActive
                         ? "linear-gradient(180deg, #f0c35e, #b86e24)"
                         : "rgba(255, 255, 255, 0.04)",
-                      color: isActive ? "#180f05" : "#ddd5ca",
-                      border: isActive ? "1px solid #ffd57d" : "1px solid rgba(230, 174, 78, 0.2)",
+                      color: isTabActive ? "#180f05" : "#ddd5ca",
+                      border: isTabActive ? "1px solid #ffd57d" : "1px solid rgba(230, 174, 78, 0.2)",
                       cursor: "pointer",
                       transition: "all 0.15s ease",
                     }}
                   >
-                    <img
-                      src={`/item-icons/${item.pid}.jpg`}
-                      alt=""
-                      width={20}
-                      height={20}
-                      style={{ borderRadius: 4, objectFit: "contain", background: "rgba(0,0,0,0.4)" }}
-                      onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
-                    />
-                    <span>{item.label}</span>
+                    <span>{t.label}</span>
+                    <span
+                      style={{
+                        fontSize: 10.5,
+                        padding: "1px 6px",
+                        borderRadius: 10,
+                        background: isTabActive ? "rgba(0,0,0,0.25)" : "rgba(230, 174, 78, 0.15)",
+                        color: isTabActive ? "#180f05" : "#ffd47c",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {t.count}
+                    </span>
                   </button>
+                );
+              })}
+            </div>
+
+            {/* Visual Box Cards Grid */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+                gap: 10,
+              }}
+            >
+              {(boxTierTab === "all42"
+                ? Object.entries(TIER_BOXES_CONFIG)
+                    .filter(([k]) => k !== "others")
+                    .flatMap(([, v]) => v)
+                : TIER_BOXES_CONFIG[boxTierTab] || []
+              ).map((box) => {
+                const isSelected = selectedBoxPid === box.pid;
+                const dbInfo = boxesList.find((b) => b.boxPid === box.pid);
+                const itemCount = dbInfo ? dbInfo.totalItems : (box.type === "Bí Tịch" ? 22 : 12);
+                const totalPP = dbInfo ? dbInfo.totalPP : 10000;
+
+                return (
+                  <div
+                    key={box.pid}
+                    onClick={() => setSelectedBoxPid(box.pid)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      padding: "10px 14px",
+                      borderRadius: 10,
+                      background: isSelected
+                        ? "linear-gradient(135deg, rgba(240, 195, 94, 0.22), rgba(184, 110, 36, 0.12))"
+                        : "rgba(28, 23, 18, 0.8)",
+                      border: isSelected ? "2px solid #ffd57d" : "1px solid rgba(230, 174, 78, 0.22)",
+                      boxShadow: isSelected ? "0 0 14px rgba(255, 212, 124, 0.3)" : "none",
+                      cursor: "pointer",
+                      transition: "all 0.2s ease",
+                    }}
+                  >
+                    <div style={{ position: "relative", flexShrink: 0 }}>
+                      <img
+                        src={`/item-icons/${box.pid}.jpg`}
+                        alt=""
+                        width={50}
+                        height={50}
+                        style={{
+                          borderRadius: 8,
+                          objectFit: "contain",
+                          background: "rgba(0,0,0,0.6)",
+                          border: isSelected ? "2px solid #ffd57d" : "1px solid rgba(230, 174, 78, 0.35)",
+                          display: "block",
+                        }}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = "/item-icons/1000001051.jpg";
+                        }}
+                      />
+                      {isSelected && (
+                        <div
+                          style={{
+                            position: "absolute",
+                            bottom: -4,
+                            right: -4,
+                            background: "#54dc96",
+                            color: "#052010",
+                            borderRadius: "50%",
+                            width: 16,
+                            height: 16,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: 10,
+                            fontWeight: 900,
+                            border: "1px solid #ffffff",
+                          }}
+                        >
+                          ✓
+                        </div>
+                      )}
+                    </div>
+
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 4 }}>
+                        <span
+                          style={{
+                            fontSize: 10,
+                            padding: "1px 6px",
+                            borderRadius: 4,
+                            background: `${box.badgeColor}22`,
+                            color: box.badgeColor,
+                            fontWeight: 800,
+                            border: `1px solid ${box.badgeColor}55`,
+                          }}
+                        >
+                          {box.typeBadge}
+                        </span>
+                        <span style={{ fontSize: 10.5, color: "#91887d", fontFamily: "monospace" }}>
+                          #{box.pid}
+                        </span>
+                      </div>
+
+                      <div
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 800,
+                          color: isSelected ? "#ffd47c" : "#f7f3ea",
+                          marginTop: 3,
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                        title={box.name}
+                      >
+                        {box.name}
+                      </div>
+
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11, color: "#c8c0b4", marginTop: 2 }}>
+                        <span>🎁 <strong>{itemCount}</strong> món</span>
+                        <span>•</span>
+                        <span>PP: <strong>{totalPP.toLocaleString()}</strong></span>
+                      </div>
+                    </div>
+                  </div>
                 );
               })}
             </div>

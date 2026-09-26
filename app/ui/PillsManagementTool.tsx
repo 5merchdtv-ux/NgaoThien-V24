@@ -160,6 +160,16 @@ function getGroupBadgeColor(groupId: string): { bg: string; border: string; text
       return { bg: "rgba(46, 204, 113, 0.2)", border: "rgba(46, 204, 113, 0.5)", text: "#2ecc71" };
     case "Group_ArcherArrows":
       return { bg: "rgba(52, 152, 219, 0.2)", border: "rgba(52, 152, 219, 0.5)", text: "#74b9ff" };
+    case "Group_PetBuff":
+      return { bg: "rgba(253, 121, 168, 0.2)", border: "rgba(253, 121, 168, 0.5)", text: "#fd79a8" };
+    case "Group_ResetChange":
+      return { bg: "rgba(162, 155, 254, 0.2)", border: "rgba(162, 155, 254, 0.5)", text: "#a29bfe" };
+    case "Group_EnchantLuck":
+      return { bg: "rgba(0, 184, 148, 0.2)", border: "rgba(0, 184, 148, 0.5)", text: "#00b894" };
+    case "Group_TeaWine":
+      return { bg: "rgba(225, 112, 85, 0.2)", border: "rgba(225, 112, 85, 0.5)", text: "#e17055" };
+    case "Group_TeleportScrolls":
+      return { bg: "rgba(9, 132, 227, 0.2)", border: "rgba(9, 132, 227, 0.5)", text: "#0984e3" };
     default:
       return { bg: "rgba(230, 174, 78, 0.12)", border: "rgba(230, 174, 78, 0.3)", text: "#ffd47c" };
   }
