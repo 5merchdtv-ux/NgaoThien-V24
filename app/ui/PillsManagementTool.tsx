@@ -67,6 +67,7 @@ interface PillItem {
   handlingRule: string;
   sourceTags: string[];
   isLocked: boolean;
+  isAllowedPill: boolean;
   price: number;
   sourceDetail?: PillSourceDetail;
 }
@@ -87,6 +88,8 @@ interface ApiResponse {
   totalPills?: number;
   activeCount?: number;
   lockedCount?: number;
+  allowedPillCount?: number;
+  allowlistStrictEnabled?: boolean;
   groups?: PillGroup[];
 }
 
@@ -189,6 +192,7 @@ function getGroupBadgeColor(groupId: string): { bg: string; border: string; text
 export default function PillsManagementTool() {
   const [activeTab, setActiveTab] = useState<"all" | "catalog" | "herbEvent" | "nonPill" | "matrix" | "mechanics">("all");
   const [groups, setGroups] = useState<PillGroup[]>([]);
+  const [allowlistStrictEnabled, setAllowlistStrictEnabled] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error" | "info"; text: string } | null>(null);
@@ -215,6 +219,7 @@ export default function PillsManagementTool() {
       const data: ApiResponse = await res.json();
       if (data.success && data.groups) {
         setGroups(data.groups);
+        setAllowlistStrictEnabled(Boolean(data.allowlistStrictEnabled));
       } else {
         setFeedback({ type: "error", text: data.message || "Không thể đọc danh sách Pill." });
       }
@@ -273,7 +278,9 @@ export default function PillsManagementTool() {
     const statPills = allPills.filter((p) => p.itemKind === "statPill").length;
     const herbEventPills = allPills.filter((p) => p.itemKind === "herbOrEventPill").length;
     const nonPills = allPills.filter((p) => p.itemKind === "nonPill").length;
-    return { totalPills, activePills, lockedPills, cash, inGame, statPills, herbEventPills, nonPills };
+    const allowedPills = allPills.filter((p) => p.isAllowedPill).length;
+    const blockedByRule = totalPills - allowedPills;
+    return { totalPills, activePills, lockedPills, cash, inGame, statPills, herbEventPills, nonPills, allowedPills, blockedByRule };
   }, [allPills]);
 
   // Filtered pills
@@ -338,6 +345,41 @@ export default function PillsManagementTool() {
     }
   };
 
+  const handleAllowPill = async (pill: PillItem) => {
+    const nextAllowed = !pill.isAllowedPill;
+
+    setSaving(true);
+    try {
+      const res = await fetch("/api/gm/pills?action=allow", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pid: pill.pid,
+          allowed: nextAllowed,
+        }),
+      });
+      const data = await res.json();
+      if (data.success || data.Success) {
+        setFeedback({
+          type: "success",
+          text: `Đã ${nextAllowed ? "cho phép cắn" : "chặn khỏi quy chuẩn"} ${pill.name} (PID: ${pill.pid}).`,
+        });
+        setGroups((prev) =>
+          prev.map((g) => ({
+            ...g,
+            pills: g.pills.map((p) => (p.pid === pill.pid ? { ...p, isAllowedPill: nextAllowed } : p)),
+          }))
+        );
+      } else {
+        setFeedback({ type: "error", text: data.message || data.Message || "Lỗi cập nhật quy chuẩn pill." });
+      }
+    } catch (err: any) {
+      setFeedback({ type: "error", text: err.message || "Lỗi kết nối server." });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // Toggle whole group
   const handleToggleGroup = async (groupId: string, lockStatus: number) => {
     const actionText = lockStatus === 1 ? "Khóa toàn bộ nhóm" : "Mở toàn bộ nhóm";
@@ -368,6 +410,71 @@ export default function PillsManagementTool() {
         fetchPills();
       } else {
         setFeedback({ type: "error", text: data.message || data.Message || "Lỗi cập nhật nhóm." });
+      }
+    } catch (err: any) {
+      setFeedback({ type: "error", text: err.message || "Lỗi kết nối server." });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleAllowGroup = async (groupId: string, allowed: boolean) => {
+    const group = groups.find((g) => g.id === groupId);
+    const gName = group ? group.name : groupId;
+
+    if (!confirm(`Bạn có chắc chắn muốn ${allowed ? "cho phép cắn" : "chặn khỏi quy chuẩn"} cả nhóm "${gName}" không?`)) {
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const res = await fetch("/api/gm/pills?action=allow-group", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          groupId,
+          allowed,
+        }),
+      });
+      const data = await res.json();
+      if (data.success || data.Success) {
+        setFeedback({
+          type: "success",
+          text: data.message || data.Message || `Đã cập nhật quy chuẩn cho nhóm "${gName}".`,
+        });
+        fetchPills();
+      } else {
+        setFeedback({ type: "error", text: data.message || data.Message || "Lỗi cập nhật nhóm quy chuẩn." });
+      }
+    } catch (err: any) {
+      setFeedback({ type: "error", text: err.message || "Lỗi kết nối server." });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleAllowPolicy = async () => {
+    const nextEnabled = !allowlistStrictEnabled;
+    if (nextEnabled && !confirm("Bật chế độ này sẽ chặn mọi pill không được tick trong cột Quy Chuẩn. Bạn đã tick đủ danh sách cho phép chưa?")) {
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const res = await fetch("/api/gm/pills?action=allow-policy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ strictEnabled: nextEnabled }),
+      });
+      const data = await res.json();
+      if (data.success || data.Success) {
+        setAllowlistStrictEnabled(nextEnabled);
+        setFeedback({
+          type: "success",
+          text: data.message || data.Message || (nextEnabled ? "Đã bật chặn pill ngoài quy chuẩn." : "Đã tắt chặn pill ngoài quy chuẩn."),
+        });
+      } else {
+        setFeedback({ type: "error", text: data.message || data.Message || "Lỗi cập nhật chế độ quy chuẩn." });
       }
     } catch (err: any) {
       setFeedback({ type: "error", text: err.message || "Lỗi kết nối server." });
@@ -520,6 +627,49 @@ export default function PillsManagementTool() {
         </div>
       </div>
 
+      <div
+        style={{
+          background: allowlistStrictEnabled ? "rgba(46, 204, 113, 0.10)" : "rgba(230, 174, 78, 0.08)",
+          border: `1px solid ${allowlistStrictEnabled ? "rgba(46, 204, 113, 0.35)" : "rgba(230, 174, 78, 0.25)"}`,
+          borderRadius: "10px",
+          padding: "14px 18px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: "14px",
+          flexWrap: "wrap",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <ShieldAlert size={22} style={{ color: allowlistStrictEnabled ? "#2ecc71" : "#ffd47c" }} />
+          <div>
+            <div style={{ fontSize: "14px", fontWeight: 800, color: "#fff" }}>
+              Chế độ chặn pill ngoài quy chuẩn: {allowlistStrictEnabled ? "Đang Bật" : "Đang Tắt"}
+            </div>
+            <div style={{ fontSize: "12px", color: "#c8c0b4", marginTop: "2px" }}>
+              Khi bật, GameServer chỉ cho cắn PID đã tick ở cột Quy Chuẩn; pill lạ sẽ báo không hỗ trợ.
+            </div>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={handleAllowPolicy}
+          disabled={saving}
+          style={{
+            background: allowlistStrictEnabled ? "rgba(231, 76, 60, 0.18)" : "linear-gradient(180deg, #2ecc71, #1f9d55)",
+            color: allowlistStrictEnabled ? "#ff8a80" : "#06150b",
+            border: `1px solid ${allowlistStrictEnabled ? "rgba(231, 76, 60, 0.45)" : "rgba(46, 204, 113, 0.75)"}`,
+            borderRadius: "6px",
+            padding: "8px 14px",
+            fontSize: "12px",
+            fontWeight: 800,
+            cursor: saving ? "not-allowed" : "pointer",
+          }}
+        >
+          {allowlistStrictEnabled ? "Tắt Chặn Ngoài Quy Chuẩn" : "Bật Chặn Ngoài Quy Chuẩn"}
+        </button>
+      </div>
+
       {/* Metrics Row */}
       <div
         style={{
@@ -556,6 +706,37 @@ export default function PillsManagementTool() {
               {loading ? "..." : metrics.totalPills}
             </div>
             <div style={{ fontSize: "11px", color: "#91887d" }}>{metrics.statPills} pill chỉ số</div>
+          </div>
+        </div>
+
+        <div
+          style={{
+            background: "rgba(28, 23, 18, 0.96)",
+            border: "1px solid rgba(46, 204, 113, 0.3)",
+            borderRadius: "10px",
+            padding: "16px",
+            display: "flex",
+            alignItems: "center",
+            gap: "14px",
+          }}
+        >
+          <div
+            style={{
+              background: "rgba(46, 204, 113, 0.15)",
+              color: "#2ecc71",
+              padding: "12px",
+              borderRadius: "8px",
+              display: "flex",
+            }}
+          >
+            <ShieldCheck size={24} />
+          </div>
+          <div>
+            <div style={{ fontSize: "12px", color: "#c8c0b4" }}>Tick Được Phép Cắn</div>
+            <div style={{ fontSize: "22px", fontWeight: 800, color: "#2ecc71" }}>
+              {loading ? "..." : metrics.allowedPills}
+            </div>
+            <div style={{ fontSize: "11px", color: "#91887d" }}>{metrics.blockedByRule} PID ngoài quy chuẩn</div>
           </div>
         </div>
 
@@ -1039,6 +1220,48 @@ export default function PillsManagementTool() {
               <div style={{ display: "flex", gap: "10px" }}>
                 <button
                   type="button"
+                  onClick={() => handleAllowGroup(selectedGroup, true)}
+                  disabled={saving}
+                  style={{
+                    background: "rgba(46, 204, 113, 0.18)",
+                    color: "#2ecc71",
+                    border: "1px solid rgba(46, 204, 113, 0.4)",
+                    borderRadius: "6px",
+                    padding: "6px 14px",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                  }}
+                >
+                  <ShieldCheck size={14} />
+                  Cho Phép Cắn Cả Nhóm
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAllowGroup(selectedGroup, false)}
+                  disabled={saving}
+                  style={{
+                    background: "rgba(231, 76, 60, 0.16)",
+                    color: "#ff8a80",
+                    border: "1px solid rgba(231, 76, 60, 0.4)",
+                    borderRadius: "6px",
+                    padding: "6px 14px",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                  }}
+                >
+                  <ShieldAlert size={14} />
+                  Chặn Quy Chuẩn Cả Nhóm
+                </button>
+                <button
+                  type="button"
                   onClick={() => handleToggleGroup(selectedGroup, 0)}
                   disabled={saving}
                   style={{
@@ -1112,6 +1335,7 @@ export default function PillsManagementTool() {
                   <th style={{ padding: "14px 16px", minWidth: "220px" }}>Tác Dụng & Chỉ Số</th>
                   <th style={{ padding: "14px 16px", width: "120px" }}>Thời Hạn</th>
                   <th style={{ padding: "14px 16px", minWidth: "220px" }}>Cơ Chế Cắn Trùng</th>
+                  <th style={{ padding: "14px 16px", textAlign: "center", width: "130px" }}>Quy Chuẩn</th>
                   <th style={{ padding: "14px 16px", textAlign: "center", width: "110px" }}>Trạng Thái</th>
                   <th style={{ padding: "14px 16px", textAlign: "center", width: "110px" }}>Hành Động</th>
                 </tr>
@@ -1119,14 +1343,14 @@ export default function PillsManagementTool() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={9} style={{ padding: "50px", textAlign: "center", color: "#c8c0b4" }}>
+                    <td colSpan={10} style={{ padding: "50px", textAlign: "center", color: "#c8c0b4" }}>
                       <RefreshCw size={26} className="animate-spin" style={{ margin: "0 auto 12px" }} />
                       Đang tải danh sách pill và dữ liệu database...
                     </td>
                   </tr>
                 ) : filteredPills.length === 0 ? (
                   <tr>
-                    <td colSpan={9} style={{ padding: "50px", textAlign: "center", color: "#91887d" }}>
+                    <td colSpan={10} style={{ padding: "50px", textAlign: "center", color: "#91887d" }}>
                       Không tìm thấy pill nào phù hợp với bộ lọc hiện tại.
                     </td>
                   </tr>
@@ -1382,6 +1606,33 @@ export default function PillsManagementTool() {
                               {pill.handlingRule}
                             </div>
                           )}
+                        </td>
+
+                        {/* Allowlist Rule */}
+                        <td style={{ padding: "12px 16px", textAlign: "center" }}>
+                          <button
+                            type="button"
+                            onClick={() => handleAllowPill(pill)}
+                            disabled={saving}
+                            title={pill.isAllowedPill ? "Bấm để gỡ khỏi danh sách được phép cắn" : "Bấm để cho phép cắn pill này"}
+                            style={{
+                              background: pill.isAllowedPill ? "rgba(46, 204, 113, 0.16)" : "rgba(231, 76, 60, 0.14)",
+                              color: pill.isAllowedPill ? "#2ecc71" : "#ff8a80",
+                              border: `1px solid ${pill.isAllowedPill ? "rgba(46, 204, 113, 0.4)" : "rgba(231, 76, 60, 0.38)"}`,
+                              borderRadius: "6px",
+                              padding: "6px 10px",
+                              fontSize: "11px",
+                              fontWeight: 800,
+                              cursor: saving ? "not-allowed" : "pointer",
+                              whiteSpace: "nowrap",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "5px",
+                            }}
+                          >
+                            {pill.isAllowedPill ? <ShieldCheck size={13} /> : <ShieldAlert size={13} />}
+                            {pill.isAllowedPill ? "Được Cắn" : "Chặn"}
+                          </button>
                         </td>
 
                         {/* Lock Status */}

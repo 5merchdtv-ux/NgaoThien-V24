@@ -19,6 +19,15 @@ export async function POST(request: Request) {
   if (action === "toggle-group") {
     return proxyGmOperations(request, "/pills/toggle-group", "POST", body);
   }
+  if (action === "allow") {
+    return proxyGmOperations(request, "/pills/allow", "POST", body);
+  }
+  if (action === "allow-group") {
+    return proxyGmOperations(request, "/pills/allow-group", "POST", body);
+  }
+  if (action === "allow-policy") {
+    return proxyGmOperations(request, "/pills/allow-policy", "POST", body);
+  }
   if (action === "reload") {
     return proxyGmOperations(request, "/pills/reload", "POST", body);
   }

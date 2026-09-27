@@ -96,6 +96,9 @@ public sealed class PillItem
     [JsonPropertyName("isLocked")]
     public bool IsLocked { get; set; }
 
+    [JsonPropertyName("isAllowedPill")]
+    public bool IsAllowedPill { get; set; }
+
     [JsonPropertyName("price")]
     public long Price { get; set; }
 
@@ -143,6 +146,12 @@ public sealed class PillsResponse
 
     [JsonPropertyName("lockedCount")]
     public int LockedCount { get; set; }
+
+    [JsonPropertyName("allowedPillCount")]
+    public int AllowedPillCount { get; set; }
+
+    [JsonPropertyName("allowlistStrictEnabled")]
+    public bool AllowlistStrictEnabled { get; set; }
 
     [JsonPropertyName("groups")]
     public List<PillGroup> Groups { get; set; } = new();
@@ -496,6 +505,8 @@ public static class PillsStore
     public static async Task<PillsResponse> GetPillsAsync(string publicConnStr, string bbgConnStr, CancellationToken cancellationToken)
     {
         var dbItems = new Dictionary<int, (string name, int isLocked)>();
+        var allowedPids = new HashSet<int>();
+        bool strictEnabled = false;
         var sellMap = new Dictionary<int, List<PillLocation>>();
         var bbgMap = new Dictionary<int, (int price, string name, string desc)>();
         var craftPids = new HashSet<int>();
@@ -507,6 +518,9 @@ public static class PillsStore
         {
             using var connPub = new SqlConnection(publicConnStr);
             await connPub.OpenAsync(cancellationToken);
+            await EnsureAllowlistTablesAsync(connPub, cancellationToken);
+            allowedPids = await ReadAllowedPidsAsync(connPub, cancellationToken);
+            strictEnabled = await ReadAllowlistStrictEnabledAsync(connPub, cancellationToken);
 
             try
             {
@@ -722,6 +736,7 @@ public static class PillsStore
                 HandlingRule = handlingRule,
                 SourceTags = sourceTags,
                 IsLocked = isLocked,
+                IsAllowedPill = allowedPids.Contains(def.Pid),
                 Price = price,
                 SourceDetail = sourceDetail
             });
@@ -782,8 +797,62 @@ public static class PillsStore
             TotalPills = pillList.Count,
             ActiveCount = pillList.Count(p => !p.IsLocked),
             LockedCount = pillList.Count(p => p.IsLocked),
+            AllowedPillCount = pillList.Count(p => p.IsAllowedPill),
+            AllowlistStrictEnabled = strictEnabled,
             Groups = finalGroups
         };
+    }
+
+    private static async Task EnsureAllowlistTablesAsync(SqlConnection conn, CancellationToken cancellationToken)
+    {
+        string sql = @"
+IF OBJECT_ID(N'dbo.TBL_HKNT_PILL_ALLOWLIST', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.TBL_HKNT_PILL_ALLOWLIST
+    (
+        FLD_PID INT NOT NULL CONSTRAINT PK_TBL_HKNT_PILL_ALLOWLIST PRIMARY KEY,
+        FLD_ALLOWED BIT NOT NULL CONSTRAINT DF_TBL_HKNT_PILL_ALLOWLIST_ALLOWED DEFAULT(0),
+        FLD_NOTE NVARCHAR(200) NULL,
+        FLD_UPDATED_AT DATETIME2(0) NOT NULL CONSTRAINT DF_TBL_HKNT_PILL_ALLOWLIST_UPDATED DEFAULT(SYSUTCDATETIME())
+    );
+END;
+
+IF OBJECT_ID(N'dbo.TBL_HKNT_PILL_POLICY', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.TBL_HKNT_PILL_POLICY
+    (
+        FLD_KEY NVARCHAR(80) NOT NULL CONSTRAINT PK_TBL_HKNT_PILL_POLICY PRIMARY KEY,
+        FLD_VALUE NVARCHAR(200) NOT NULL,
+        FLD_UPDATED_AT DATETIME2(0) NOT NULL CONSTRAINT DF_TBL_HKNT_PILL_POLICY_UPDATED DEFAULT(SYSUTCDATETIME())
+    );
+END;
+
+IF NOT EXISTS (SELECT 1 FROM dbo.TBL_HKNT_PILL_POLICY WHERE FLD_KEY = N'StrictEnabled')
+BEGIN
+    INSERT INTO dbo.TBL_HKNT_PILL_POLICY (FLD_KEY, FLD_VALUE) VALUES (N'StrictEnabled', N'0');
+END;";
+        using var cmd = new SqlCommand(sql, conn);
+        await cmd.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    private static async Task<HashSet<int>> ReadAllowedPidsAsync(SqlConnection conn, CancellationToken cancellationToken)
+    {
+        var result = new HashSet<int>();
+        using var cmd = new SqlCommand("SELECT FLD_PID FROM dbo.TBL_HKNT_PILL_ALLOWLIST WITH (NOLOCK) WHERE FLD_ALLOWED = 1", conn);
+        using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            result.Add(reader.GetInt32(0));
+        }
+        return result;
+    }
+
+    private static async Task<bool> ReadAllowlistStrictEnabledAsync(SqlConnection conn, CancellationToken cancellationToken)
+    {
+        using var cmd = new SqlCommand("SELECT TOP 1 FLD_VALUE FROM dbo.TBL_HKNT_PILL_POLICY WITH (NOLOCK) WHERE FLD_KEY = N'StrictEnabled'", conn);
+        object? value = await cmd.ExecuteScalarAsync(cancellationToken);
+        string text = Convert.ToString(value) ?? "0";
+        return text == "1" || text.Equals("true", StringComparison.OrdinalIgnoreCase);
     }
 
     private static List<int> ParseCraftIngredientPids(string json)
@@ -970,6 +1039,71 @@ public static class PillsStore
         cmd.Parameters.AddWithValue("@Pid", pid);
         int affected = await cmd.ExecuteNonQueryAsync(cancellationToken);
         return affected > 0;
+    }
+
+    public static async Task SetPillAllowedAsync(string publicConnStr, int pid, bool allowed, CancellationToken cancellationToken)
+    {
+        using var conn = new SqlConnection(publicConnStr);
+        await conn.OpenAsync(cancellationToken);
+        await EnsureAllowlistTablesAsync(conn, cancellationToken);
+        string sql = @"
+MERGE dbo.TBL_HKNT_PILL_ALLOWLIST AS target
+USING (SELECT @Pid AS FLD_PID) AS source
+ON target.FLD_PID = source.FLD_PID
+WHEN MATCHED THEN
+    UPDATE SET FLD_ALLOWED = @Allowed, FLD_UPDATED_AT = SYSUTCDATETIME()
+WHEN NOT MATCHED THEN
+    INSERT (FLD_PID, FLD_ALLOWED) VALUES (@Pid, @Allowed);";
+        using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@Pid", pid);
+        cmd.Parameters.AddWithValue("@Allowed", allowed);
+        await cmd.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    public static async Task<int> SetGroupAllowedAsync(string publicConnStr, string bbgConnStr, string groupId, bool allowed, CancellationToken cancellationToken)
+    {
+        var all = await GetPillsAsync(publicConnStr, bbgConnStr, cancellationToken);
+        var targetGroup = all.Groups.FirstOrDefault(g => g.Id == groupId);
+        if (targetGroup == null || targetGroup.Pills.Count == 0) return 0;
+
+        using var conn = new SqlConnection(publicConnStr);
+        await conn.OpenAsync(cancellationToken);
+        await EnsureAllowlistTablesAsync(conn, cancellationToken);
+
+        string values = string.Join(",", targetGroup.Pills.Select((p, i) => $"(@Pid{i})"));
+        string sql = $@"
+MERGE dbo.TBL_HKNT_PILL_ALLOWLIST AS target
+USING (VALUES {values}) AS source(FLD_PID)
+ON target.FLD_PID = source.FLD_PID
+WHEN MATCHED THEN
+    UPDATE SET FLD_ALLOWED = @Allowed, FLD_UPDATED_AT = SYSUTCDATETIME()
+WHEN NOT MATCHED THEN
+    INSERT (FLD_PID, FLD_ALLOWED) VALUES (source.FLD_PID, @Allowed);";
+        using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@Allowed", allowed);
+        for (int i = 0; i < targetGroup.Pills.Count; i++)
+        {
+            cmd.Parameters.AddWithValue($"@Pid{i}", targetGroup.Pills[i].Pid);
+        }
+        return await cmd.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    public static async Task SetAllowlistStrictEnabledAsync(string publicConnStr, bool enabled, CancellationToken cancellationToken)
+    {
+        using var conn = new SqlConnection(publicConnStr);
+        await conn.OpenAsync(cancellationToken);
+        await EnsureAllowlistTablesAsync(conn, cancellationToken);
+        string sql = @"
+MERGE dbo.TBL_HKNT_PILL_POLICY AS target
+USING (SELECT N'StrictEnabled' AS FLD_KEY) AS source
+ON target.FLD_KEY = source.FLD_KEY
+WHEN MATCHED THEN
+    UPDATE SET FLD_VALUE = @Value, FLD_UPDATED_AT = SYSUTCDATETIME()
+WHEN NOT MATCHED THEN
+    INSERT (FLD_KEY, FLD_VALUE) VALUES (N'StrictEnabled', @Value);";
+        using var cmd = new SqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@Value", enabled ? "1" : "0");
+        await cmd.ExecuteNonQueryAsync(cancellationToken);
     }
 
     public static async Task<int> ToggleGroupAsync(string publicConnStr, string bbgConnStr, string groupId, bool enable, CancellationToken cancellationToken)
