@@ -187,7 +187,7 @@ function getGroupBadgeColor(groupId: string): { bg: string; border: string; text
 }
 
 export default function PillsManagementTool() {
-  const [activeTab, setActiveTab] = useState<"catalog" | "herbEvent" | "nonPill" | "matrix" | "mechanics">("catalog");
+  const [activeTab, setActiveTab] = useState<"all" | "catalog" | "herbEvent" | "nonPill" | "matrix" | "mechanics">("all");
   const [groups, setGroups] = useState<PillGroup[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
@@ -235,6 +235,7 @@ export default function PillsManagementTool() {
   }, [groups]);
 
   const currentKind = useMemo(() => {
+    if (activeTab === "all") return null;
     if (activeTab === "catalog") return "statPill";
     if (activeTab === "herbEvent") return "herbOrEventPill";
     if (activeTab === "nonPill") return "nonPill";
@@ -751,6 +752,30 @@ export default function PillsManagementTool() {
       >
         <button
           type="button"
+          onClick={() => setActiveTab("all")}
+          style={{
+            background:
+              activeTab === "all"
+                ? "linear-gradient(180deg, #f0c35e, #b86e24)"
+                : "rgba(255, 255, 255, 0.05)",
+            color: activeTab === "all" ? "#180f05" : "#c8c0b4",
+            fontWeight: activeTab === "all" ? 800 : 500,
+            border: "1px solid rgba(230, 174, 78, 0.3)",
+            borderRadius: "6px",
+            padding: "10px 20px",
+            fontSize: "14px",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
+          <Search size={16} />
+          Tất Cả ({metrics.totalPills})
+        </button>
+
+        <button
+          type="button"
           onClick={() => setActiveTab("catalog")}
           style={{
             background:
@@ -871,7 +896,7 @@ export default function PillsManagementTool() {
       </div>
 
       {/* TAB 1: CATALOG & TOGGLE */}
-      {(activeTab === "catalog" || activeTab === "herbEvent" || activeTab === "nonPill") && (
+      {(activeTab === "all" || activeTab === "catalog" || activeTab === "herbEvent" || activeTab === "nonPill") && (
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           {/* Filters Bar */}
           <div
