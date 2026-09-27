@@ -61,6 +61,11 @@ interface PillItem {
   effectDescription: string;
   duration: string;
   stackRule: string;
+  itemKind: "statPill" | "herbOrEventPill" | "nonPill";
+  itemKindLabel: string;
+  effectSlots: string[];
+  handlingRule: string;
+  sourceTags: string[];
   isLocked: boolean;
   price: number;
   sourceDetail?: PillSourceDetail;
@@ -170,13 +175,19 @@ function getGroupBadgeColor(groupId: string): { bg: string; border: string; text
       return { bg: "rgba(225, 112, 85, 0.2)", border: "rgba(225, 112, 85, 0.5)", text: "#e17055" };
     case "Group_TeleportScrolls":
       return { bg: "rgba(9, 132, 227, 0.2)", border: "rgba(9, 132, 227, 0.5)", text: "#0984e3" };
+    case "Group_ThuocSuKien":
+      return { bg: "rgba(255, 118, 117, 0.18)", border: "rgba(255, 118, 117, 0.45)", text: "#ff7675" };
+    case "Group_ThuocHaiChe":
+      return { bg: "rgba(85, 239, 196, 0.16)", border: "rgba(85, 239, 196, 0.42)", text: "#55efc4" };
+    case "Group_KhongPhaiPill":
+      return { bg: "rgba(149, 165, 166, 0.16)", border: "rgba(149, 165, 166, 0.42)", text: "#b2bec3" };
     default:
       return { bg: "rgba(230, 174, 78, 0.12)", border: "rgba(230, 174, 78, 0.3)", text: "#ffd47c" };
   }
 }
 
 export default function PillsManagementTool() {
-  const [activeTab, setActiveTab] = useState<"catalog" | "matrix" | "mechanics">("catalog");
+  const [activeTab, setActiveTab] = useState<"catalog" | "herbEvent" | "nonPill" | "matrix" | "mechanics">("catalog");
   const [groups, setGroups] = useState<PillGroup[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
@@ -223,6 +234,34 @@ export default function PillsManagementTool() {
     return groups.flatMap((g) => g.pills);
   }, [groups]);
 
+  const currentKind = useMemo(() => {
+    if (activeTab === "catalog") return "statPill";
+    if (activeTab === "herbEvent") return "herbOrEventPill";
+    if (activeTab === "nonPill") return "nonPill";
+    return null;
+  }, [activeTab]);
+
+  const visiblePills = useMemo(() => {
+    if (!currentKind) return allPills;
+    return allPills.filter((p) => p.itemKind === currentKind);
+  }, [allPills, currentKind]);
+
+  const visibleGroups = useMemo(() => {
+    if (!currentKind) return groups;
+    return groups
+      .map((g) => ({
+        ...g,
+        pills: g.pills.filter((p) => p.itemKind === currentKind),
+      }))
+      .filter((g) => g.pills.length > 0);
+  }, [groups, currentKind]);
+
+  useEffect(() => {
+    if (selectedGroup !== "all" && !visibleGroups.some((g) => g.id === selectedGroup)) {
+      setSelectedGroup("all");
+    }
+  }, [selectedGroup, visibleGroups]);
+
   // Metrics
   const metrics = useMemo(() => {
     const totalPills = allPills.length;
@@ -230,12 +269,15 @@ export default function PillsManagementTool() {
     const lockedPills = allPills.filter((p) => p.isLocked).length;
     const cash = allPills.filter((p) => p.isCashShop).length;
     const inGame = totalPills - cash;
-    return { totalPills, activePills, lockedPills, cash, inGame };
+    const statPills = allPills.filter((p) => p.itemKind === "statPill").length;
+    const herbEventPills = allPills.filter((p) => p.itemKind === "herbOrEventPill").length;
+    const nonPills = allPills.filter((p) => p.itemKind === "nonPill").length;
+    return { totalPills, activePills, lockedPills, cash, inGame, statPills, herbEventPills, nonPills };
   }, [allPills]);
 
   // Filtered pills
   const filteredPills = useMemo(() => {
-    return allPills.filter((p) => {
+    return visiblePills.filter((p) => {
       if (selectedGroup !== "all" && p.groupId !== selectedGroup) return false;
       if (selectedSource === "cash" && !p.isCashShop) return false;
       if (selectedSource === "ingame" && p.isCashShop) return false;
@@ -248,11 +290,13 @@ export default function PillsManagementTool() {
         const matchPid = p.pid.toString().includes(q);
         const matchEffect = p.effectDescription.toLowerCase().includes(q);
         const matchOrig = p.originalName.toLowerCase().includes(q);
-        if (!matchName && !matchPid && !matchEffect && !matchOrig) return false;
+        const matchKind = p.itemKindLabel.toLowerCase().includes(q);
+        const matchSlots = p.effectSlots.join(" ").toLowerCase().includes(q);
+        if (!matchName && !matchPid && !matchEffect && !matchOrig && !matchKind && !matchSlots) return false;
       }
       return true;
     });
-  }, [allPills, selectedGroup, selectedSource, selectedLockStatus, searchQuery]);
+  }, [visiblePills, selectedGroup, selectedSource, selectedLockStatus, searchQuery]);
 
   // Toggle single pill
   const handleTogglePill = async (pill: PillItem) => {
@@ -396,14 +440,14 @@ export default function PillsManagementTool() {
                 border: "1px solid rgba(230, 174, 78, 0.3)",
               }}
             >
-              13 Nhóm Buff Chuẩn
+              Phân loại pill chuẩn
             </span>
           </div>
           <h1 style={{ fontSize: "24px", fontWeight: 800, margin: 0, color: "#fff" }}>
-            Danh Mục Pill, Công Tắc Bật/Tắt & Sơ Đồ Cắn Trùng
+            Danh Mục Pill, Thuốc Chế/Event & Vật Phẩm Không Phải Pill
           </h1>
           <p style={{ margin: "4px 0 0", color: "#c8c0b4", fontSize: "14px" }}>
-            Quản lý toàn bộ dược phẩm Cash Shop & In-game, khóa/mở sử dụng tức thì, tra cứu cơ chế cộng dồn và ma trận xung đột.
+            Tách pill cộng chỉ số khỏi túi tiền, vé, sách, bùa tiện ích; tra cứu nguồn gốc, cơ chế cộng dồn và ma trận xung đột.
           </p>
         </div>
 
@@ -506,11 +550,11 @@ export default function PillsManagementTool() {
             <Package size={24} />
           </div>
           <div>
-            <div style={{ fontSize: "12px", color: "#c8c0b4" }}>Tổng Số Pill / Buff</div>
+            <div style={{ fontSize: "12px", color: "#c8c0b4" }}>Tổng Vật Phẩm Theo Dõi</div>
             <div style={{ fontSize: "22px", fontWeight: 800, color: "#fff" }}>
               {loading ? "..." : metrics.totalPills}
             </div>
-            <div style={{ fontSize: "11px", color: "#91887d" }}>13 phân nhóm chuẩn</div>
+            <div style={{ fontSize: "11px", color: "#91887d" }}>{metrics.statPills} pill chỉ số</div>
           </div>
         </div>
 
@@ -630,11 +674,11 @@ export default function PillsManagementTool() {
             <Swords size={24} />
           </div>
           <div>
-            <div style={{ fontSize: "12px", color: "#c8c0b4" }}>In-game / Rơi Quái</div>
+            <div style={{ fontSize: "12px", color: "#c8c0b4" }}>Không Phải Pill</div>
             <div style={{ fontSize: "22px", fontWeight: 800, color: "#3498db" }}>
-              {loading ? "..." : metrics.inGame}
+              {loading ? "..." : metrics.nonPills}
             </div>
-            <div style={{ fontSize: "11px", color: "#91887d" }}>Shop NPC & Drop quái</div>
+            <div style={{ fontSize: "11px", color: "#91887d" }}>Túi, vé, sách, tiện ích</div>
           </div>
         </div>
       </div>
@@ -699,6 +743,7 @@ export default function PillsManagementTool() {
       <div
         style={{
           display: "flex",
+          flexWrap: "wrap",
           gap: "8px",
           borderBottom: "1px solid rgba(230, 174, 78, 0.2)",
           paddingBottom: "4px",
@@ -725,7 +770,55 @@ export default function PillsManagementTool() {
           }}
         >
           <Layers size={16} />
-          Danh Sách & Bật/Tắt Pill ({allPills.length})
+          Pill Cộng Chỉ Số ({metrics.statPills})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("herbEvent")}
+          style={{
+            background:
+              activeTab === "herbEvent"
+                ? "linear-gradient(180deg, #f0c35e, #b86e24)"
+                : "rgba(255, 255, 255, 0.05)",
+            color: activeTab === "herbEvent" ? "#180f05" : "#c8c0b4",
+            fontWeight: activeTab === "herbEvent" ? 800 : 500,
+            border: "1px solid rgba(230, 174, 78, 0.3)",
+            borderRadius: "6px",
+            padding: "10px 20px",
+            fontSize: "14px",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
+          <Package size={16} />
+          Thuốc Hái/Chế & Event ({metrics.herbEventPills})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("nonPill")}
+          style={{
+            background:
+              activeTab === "nonPill"
+                ? "linear-gradient(180deg, #f0c35e, #b86e24)"
+                : "rgba(255, 255, 255, 0.05)",
+            color: activeTab === "nonPill" ? "#180f05" : "#c8c0b4",
+            fontWeight: activeTab === "nonPill" ? 800 : 500,
+            border: "1px solid rgba(230, 174, 78, 0.3)",
+            borderRadius: "6px",
+            padding: "10px 20px",
+            fontSize: "14px",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
+          <Info size={16} />
+          Không Phải Pill ({metrics.nonPills})
         </button>
 
         <button
@@ -749,7 +842,7 @@ export default function PillsManagementTool() {
           }}
         >
           <ArrowRightLeft size={16} />
-          Sơ Đồ Ma Trận Cắn Trùng & Xung Đột (13x13)
+          Ma Trận Pill Cộng Chỉ Số
         </button>
 
         <button
@@ -773,12 +866,12 @@ export default function PillsManagementTool() {
           }}
         >
           <Info size={16} />
-          Cơ Chế GameServer & Chi Tiết 13 Nhóm
+          Cơ Chế GameServer & Chi Tiết Nhóm
         </button>
       </div>
 
       {/* TAB 1: CATALOG & TOGGLE */}
-      {activeTab === "catalog" && (
+      {(activeTab === "catalog" || activeTab === "herbEvent" || activeTab === "nonPill") && (
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           {/* Filters Bar */}
           <div
@@ -840,8 +933,8 @@ export default function PillsManagementTool() {
                   outline: "none",
                 }}
               >
-                <option value="all">Tất cả các nhóm ({allPills.length})</option>
-                {groups.map((g) => (
+                <option value="all">Tất cả các nhóm ({visiblePills.length})</option>
+                {visibleGroups.map((g) => (
                   <option key={g.id} value={g.id}>
                     {g.name} ({g.pills.length})
                   </option>
@@ -912,10 +1005,10 @@ export default function PillsManagementTool() {
               <div>
                 <span style={{ fontWeight: 700, color: "#ffd47c", fontSize: "14px" }}>
                   Thao tác nhanh cho nhóm:{" "}
-                  {groups.find((g) => g.id === selectedGroup)?.name}
+                  {visibleGroups.find((g) => g.id === selectedGroup)?.name}
                 </span>
                 <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#c8c0b4" }}>
-                  {groups.find((g) => g.id === selectedGroup)?.description}
+                  {visibleGroups.find((g) => g.id === selectedGroup)?.description}
                 </p>
               </div>
               <div style={{ display: "flex", gap: "10px" }}>
@@ -987,7 +1080,7 @@ export default function PillsManagementTool() {
                     letterSpacing: "0.5px",
                   }}
                 >
-                  <th style={{ padding: "14px 16px", minWidth: "300px" }}>Vật Phẩm Pill</th>
+                  <th style={{ padding: "14px 16px", minWidth: "300px" }}>Vật Phẩm</th>
                   <th style={{ padding: "14px 16px", width: "110px" }}>PID</th>
                   <th style={{ padding: "14px 16px" }}>Nhóm Buff</th>
                   <th style={{ padding: "14px 16px" }}>Nguồn Gốc (Bấm xem chi tiết)</th>
@@ -1038,6 +1131,30 @@ export default function PillsManagementTool() {
                                   {pill.originalName}
                                 </div>
                               )}
+                              <span
+                                style={{
+                                  width: "fit-content",
+                                  fontSize: "10px",
+                                  color:
+                                    pill.itemKind === "statPill"
+                                      ? "#2ecc71"
+                                      : pill.itemKind === "herbOrEventPill"
+                                      ? "#55efc4"
+                                      : "#b2bec3",
+                                  background:
+                                    pill.itemKind === "statPill"
+                                      ? "rgba(46, 204, 113, 0.12)"
+                                      : pill.itemKind === "herbOrEventPill"
+                                      ? "rgba(85, 239, 196, 0.12)"
+                                      : "rgba(149, 165, 166, 0.12)",
+                                  border: "1px solid rgba(255,255,255,0.12)",
+                                  borderRadius: "4px",
+                                  padding: "2px 6px",
+                                  fontWeight: 700,
+                                }}
+                              >
+                                {pill.itemKindLabel}
+                              </span>
                             </div>
                           </div>
                         </td>
@@ -1201,7 +1318,27 @@ export default function PillsManagementTool() {
 
                         {/* Effect */}
                         <td style={{ padding: "12px 16px", fontSize: "12px", color: "#ddd5ca", lineHeight: "1.4" }}>
-                          {pill.effectDescription}
+                          <div>{pill.effectDescription}</div>
+                          {pill.effectSlots.length > 0 && (
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginTop: "8px" }}>
+                              {pill.effectSlots.map((slot) => (
+                                <span
+                                  key={`${pill.pid}-${slot}`}
+                                  style={{
+                                    fontSize: "10px",
+                                    color: "#ffd47c",
+                                    background: "rgba(230, 174, 78, 0.1)",
+                                    border: "1px solid rgba(230, 174, 78, 0.22)",
+                                    borderRadius: "4px",
+                                    padding: "2px 5px",
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  {slot}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </td>
 
                         {/* Duration */}
@@ -1214,7 +1351,12 @@ export default function PillsManagementTool() {
 
                         {/* Stacking Rule */}
                         <td style={{ padding: "12px 16px", fontSize: "11px", color: "#a8a094", lineHeight: "1.4" }}>
-                          {pill.stackRule}
+                          <div>{pill.stackRule}</div>
+                          {pill.handlingRule && (
+                            <div style={{ marginTop: "6px", color: "#ffd47c" }}>
+                              {pill.handlingRule}
+                            </div>
+                          )}
                         </td>
 
                         {/* Lock Status */}
@@ -1305,7 +1447,7 @@ export default function PillsManagementTool() {
             }}
           >
             <h3 style={{ fontSize: "15px", fontWeight: 800, color: "#ffd47c", margin: "0 0 10px" }}>
-              Chú Thích Quy Tắc Ma Trận Tương Tác & Cộng Dồn Buff (13 Nhóm)
+              Chú Thích Quy Tắc Ma Trận Tương Tác & Cộng Dồn Pill Cộng Chỉ Số
             </h3>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "12px" }}>
               <div
@@ -1422,7 +1564,7 @@ export default function PillsManagementTool() {
             </div>
           </div>
 
-          {/* 13x13 Visual Cross-Matrix */}
+          {/* Visual Cross-Matrix */}
           <div
             style={{
               background: "rgba(28, 23, 18, 0.96)",
@@ -1433,8 +1575,11 @@ export default function PillsManagementTool() {
             }}
           >
             <h4 style={{ color: "#ffd47c", margin: "0 0 12px", fontSize: "14px", fontWeight: 700 }}>
-              Bảng Đối Chiếu Xung Đột Từng Cặp Nhóm Buff (18 x 18)
+              Bảng Đối Chiếu Xung Đột Từng Cặp Nhóm Buff
             </h4>
+            <p style={{ margin: "0 0 12px", color: "#c8c0b4", fontSize: "12px", lineHeight: "1.5" }}>
+              Các nhóm không cộng chỉ số nhân vật theo thời gian như Túi Võ Hoàng Tệ, vé map, bùa tiện ích đã được tách sang tab Không Phải Pill; trong bảng cũ chúng chỉ còn ý nghĩa tham chiếu trung lập.
+            </p>
 
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11px", textAlign: "center" }}>
               <thead>
@@ -1520,7 +1665,7 @@ export default function PillsManagementTool() {
         </div>
       )}
 
-      {/* TAB 3: ENGINE MECHANICS & 13 GROUPS BREAKDOWN */}
+      {/* TAB 3: ENGINE MECHANICS & GROUPS BREAKDOWN */}
       {activeTab === "mechanics" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
           {/* Architecture overview */}
@@ -1797,6 +1942,87 @@ export default function PillsManagementTool() {
                     {modalPill.duration}
                   </div>
                 </div>
+              </div>
+
+              <div
+                style={{
+                  background: "rgba(28, 23, 18, 0.96)",
+                  border: "1px solid rgba(230, 174, 78, 0.2)",
+                  borderRadius: "10px",
+                  padding: "14px 16px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "10px",
+                }}
+              >
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center" }}>
+                  <span style={{ fontSize: "12px", color: "#ffd47c", fontWeight: 800 }}>Phân loại:</span>
+                  <span
+                    style={{
+                      fontSize: "12px",
+                      color:
+                        modalPill.itemKind === "statPill"
+                          ? "#2ecc71"
+                          : modalPill.itemKind === "herbOrEventPill"
+                          ? "#55efc4"
+                          : "#b2bec3",
+                      background:
+                        modalPill.itemKind === "statPill"
+                          ? "rgba(46, 204, 113, 0.12)"
+                          : modalPill.itemKind === "herbOrEventPill"
+                          ? "rgba(85, 239, 196, 0.12)"
+                          : "rgba(149, 165, 166, 0.12)",
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      borderRadius: "4px",
+                      padding: "3px 8px",
+                      fontWeight: 800,
+                    }}
+                  >
+                    {modalPill.itemKindLabel}
+                  </span>
+                  {modalPill.sourceTags.map((tag) => (
+                    <span
+                      key={`${modalPill.pid}-${tag}`}
+                      style={{
+                        fontSize: "11px",
+                        color: "#ddd5ca",
+                        background: "rgba(255,255,255,0.05)",
+                        border: "1px solid rgba(230, 174, 78, 0.18)",
+                        borderRadius: "4px",
+                        padding: "3px 7px",
+                      }}
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+
+                {modalPill.effectSlots.length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", alignItems: "center" }}>
+                    <span style={{ fontSize: "12px", color: "#ffd47c", fontWeight: 800 }}>Slot chỉ số:</span>
+                    {modalPill.effectSlots.map((slot) => (
+                      <span
+                        key={`${modalPill.pid}-modal-${slot}`}
+                        style={{
+                          fontSize: "11px",
+                          color: "#ffd47c",
+                          background: "rgba(230, 174, 78, 0.1)",
+                          border: "1px solid rgba(230, 174, 78, 0.25)",
+                          borderRadius: "4px",
+                          padding: "3px 7px",
+                        }}
+                      >
+                        {slot}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {modalPill.handlingRule && (
+                  <div style={{ fontSize: "12px", color: "#e8dfd1", lineHeight: "1.5" }}>
+                    <strong style={{ color: "#ffd47c" }}>Hướng xử lý:</strong> {modalPill.handlingRule}
+                  </div>
+                )}
               </div>
 
               {/* SECTION 1: NƠI BÁN / NƠI XUẤT HIỆN / BÃI DROP */}
