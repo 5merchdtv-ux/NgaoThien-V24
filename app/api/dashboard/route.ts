@@ -21,7 +21,7 @@ const rankingTypes = new Set<RankingType>(["level", "wx", "pvp", "online"]);
 
 async function fetchJson<T>(path: string, revalidate: number): Promise<T> {
   const baseUrl = (
-    process.env.API_BASE_URL ?? "https://hkngaothien.duckdns.org"
+    process.env.API_BASE_URL ?? "http://hkngaothienv24.duckdns.org:18092"
   ).replace(/\/+$/, "");
 
   const response = await fetch(`${baseUrl}${path}`, {

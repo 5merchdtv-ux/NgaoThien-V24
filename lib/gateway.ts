@@ -2,7 +2,7 @@ import "server-only";
 
 export function gatewayBaseUrl(): string {
   return (
-    process.env.API_BASE_URL ?? "https://hkngaothien.duckdns.org"
+    process.env.API_BASE_URL ?? "http://hkngaothienv24.duckdns.org:18092"
   ).replace(/\/+$/, "");
 }
 
