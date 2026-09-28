@@ -1318,15 +1318,15 @@ export default function PillsManagementTool() {
             <div
               style={{
                 width: "100%",
-                overflowX: "auto",
+                overflowX: "hidden",
                 overflowY: "hidden",
                 scrollbarColor: "rgba(230, 174, 78, 0.55) rgba(18, 14, 10, 0.9)",
               }}
             >
             <table
               style={{
-                width: "1680px",
-                minWidth: "1680px",
+                width: "100%",
+                minWidth: "0",
                 tableLayout: "fixed",
                 borderCollapse: "collapse",
                 textAlign: "left",
@@ -1344,16 +1344,16 @@ export default function PillsManagementTool() {
                     letterSpacing: "0.5px",
                   }}
                 >
-                  <th style={{ padding: "14px 16px", width: "300px" }}>Vật Phẩm</th>
-                  <th style={{ padding: "14px 16px", width: "110px" }}>PID</th>
-                  <th style={{ padding: "14px 16px", width: "220px" }}>Nhóm Buff</th>
-                  <th style={{ padding: "14px 16px", width: "190px" }}>Nguồn Gốc</th>
-                  <th style={{ padding: "14px 16px", width: "230px" }}>Tác Dụng & Chỉ Số</th>
-                  <th style={{ padding: "14px 16px", width: "115px" }}>Thời Hạn</th>
-                  <th style={{ padding: "14px 16px", width: "245px" }}>Cơ Chế Cắn Trùng</th>
-                  <th style={{ padding: "14px 12px", textAlign: "center", width: "115px" }}>Quy Chuẩn</th>
-                  <th style={{ padding: "14px 12px", textAlign: "center", width: "115px" }}>Trạng Thái</th>
-                  <th style={{ padding: "14px 12px", textAlign: "center", width: "120px" }}>Hành Động</th>
+                  <th style={{ padding: "12px 8px", width: "18%" }}>Vật Phẩm</th>
+                  <th style={{ padding: "12px 6px", width: "7%" }}>PID</th>
+                  <th style={{ padding: "12px 6px", width: "10%" }}>Nhóm</th>
+                  <th style={{ padding: "12px 6px", width: "10%" }}>Nguồn</th>
+                  <th style={{ padding: "12px 8px", width: "15%" }}>Tác Dụng</th>
+                  <th style={{ padding: "12px 6px", width: "7%" }}>Hạn</th>
+                  <th style={{ padding: "12px 8px", width: "17%" }}>Cắn Trùng</th>
+                  <th style={{ padding: "12px 5px", textAlign: "center", width: "6%" }}>Quy Chuẩn</th>
+                  <th style={{ padding: "12px 5px", textAlign: "center", width: "5%" }}>TT</th>
+                  <th style={{ padding: "12px 5px", textAlign: "center", width: "5%" }}>Khóa</th>
                 </tr>
               </thead>
               <tbody>
@@ -1385,10 +1385,10 @@ export default function PillsManagementTool() {
                         }}
                       >
                         {/* Name + Icon */}
-                        <td style={{ padding: "12px 16px" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                            <PillIconThumbnail pid={pill.pid} name={pill.name} />
-                            <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
+                        <td style={{ padding: "10px 8px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px", minWidth: 0 }}>
+                            <PillIconThumbnail pid={pill.pid} name={pill.name} size={38} />
+                            <div style={{ display: "flex", flexDirection: "column", gap: "3px", minWidth: 0 }}>
                               <strong style={{ color: pill.isLocked ? "#e74c3c" : "#fff", fontSize: "14px", fontWeight: 700 }}>
                                 {pill.name}
                               </strong>
@@ -1426,11 +1426,11 @@ export default function PillsManagementTool() {
                         </td>
 
                         {/* PID */}
-                        <td style={{ padding: "12px 16px" }}>
+                        <td style={{ padding: "10px 6px" }}>
                           <span
                             style={{
                               fontFamily: "monospace",
-                              fontSize: "12px",
+                              fontSize: "11px",
                               fontWeight: 700,
                               color: "#ffd47c",
                               background: "rgba(230, 174, 78, 0.1)",
@@ -1438,6 +1438,8 @@ export default function PillsManagementTool() {
                               padding: "2px 6px",
                               borderRadius: "4px",
                               display: "inline-block",
+                              maxWidth: "100%",
+                              overflowWrap: "anywhere",
                             }}
                           >
                             {pill.pid}
@@ -1445,7 +1447,7 @@ export default function PillsManagementTool() {
                         </td>
 
                         {/* Group */}
-                        <td style={{ padding: "12px 16px" }}>
+                        <td style={{ padding: "10px 6px" }}>
                           <span
                             style={{
                               fontSize: "11px",
@@ -1455,8 +1457,9 @@ export default function PillsManagementTool() {
                               padding: "4px 8px",
                               borderRadius: "4px",
                               border: `1px solid ${groupColor.border}`,
-                              whiteSpace: "nowrap",
                               display: "inline-block",
+                              lineHeight: "1.25",
+                              overflowWrap: "anywhere",
                             }}
                           >
                             {pill.groupName}
@@ -1464,7 +1467,7 @@ export default function PillsManagementTool() {
                         </td>
 
                         {/* Source (Clickable to open detailed Modal) */}
-                        <td style={{ padding: "12px 16px" }}>
+                        <td style={{ padding: "10px 6px" }}>
                           <button
                             type="button"
                             onClick={() => setModalPill(pill)}
@@ -1483,19 +1486,19 @@ export default function PillsManagementTool() {
                                   fontSize: "11px",
                                   background: "rgba(241, 196, 15, 0.15)",
                                   color: "#f1c40f",
-                                  padding: "4px 10px",
+                                  padding: "4px 7px",
                                   borderRadius: "6px",
                                   border: "1px solid rgba(241, 196, 15, 0.4)",
                                   fontWeight: 700,
                                   display: "inline-flex",
                                   alignItems: "center",
-                                  gap: "5px",
-                                  whiteSpace: "nowrap",
+                                  gap: "4px",
+                                  lineHeight: "1.25",
                                   transition: "transform 0.15s ease",
                                 }}
                               >
                                 <ShoppingBag size={12} />
-                                Bách Bảo Các
+                                BBC
                                 <ExternalLink size={10} style={{ opacity: 0.7 }} />
                               </span>
                             ) : pill.source.includes("NPC") ? (
@@ -1504,14 +1507,14 @@ export default function PillsManagementTool() {
                                   fontSize: "11px",
                                   background: "rgba(26, 188, 156, 0.15)",
                                   color: "#1abc9c",
-                                  padding: "4px 10px",
+                                  padding: "4px 7px",
                                   borderRadius: "6px",
                                   border: "1px solid rgba(26, 188, 156, 0.4)",
                                   fontWeight: 600,
                                   display: "inline-flex",
                                   alignItems: "center",
-                                  gap: "5px",
-                                  whiteSpace: "nowrap",
+                                  gap: "4px",
+                                  lineHeight: "1.25",
                                 }}
                               >
                                 <Store size={12} />
@@ -1524,14 +1527,14 @@ export default function PillsManagementTool() {
                                   fontSize: "11px",
                                   background: "rgba(231, 76, 60, 0.15)",
                                   color: "#ff6b6b",
-                                  padding: "4px 10px",
+                                  padding: "4px 7px",
                                   borderRadius: "6px",
                                   border: "1px solid rgba(231, 76, 60, 0.4)",
                                   fontWeight: 600,
                                   display: "inline-flex",
                                   alignItems: "center",
-                                  gap: "5px",
-                                  whiteSpace: "nowrap",
+                                  gap: "4px",
+                                  lineHeight: "1.25",
                                 }}
                               >
                                 <Flame size={12} />
@@ -1544,18 +1547,18 @@ export default function PillsManagementTool() {
                                   fontSize: "11px",
                                   background: "rgba(155, 89, 182, 0.15)",
                                   color: "#9b59b6",
-                                  padding: "4px 10px",
+                                  padding: "4px 7px",
                                   borderRadius: "6px",
                                   border: "1px solid rgba(155, 89, 182, 0.4)",
                                   fontWeight: 600,
                                   display: "inline-flex",
                                   alignItems: "center",
-                                  gap: "5px",
-                                  whiteSpace: "nowrap",
+                                  gap: "4px",
+                                  lineHeight: "1.25",
                                 }}
                               >
                                 <Package size={12} />
-                                Mở Từ Hộp Báu
+                                Hộp Báu
                                 <ExternalLink size={10} style={{ opacity: 0.7 }} />
                               </span>
                             ) : (
@@ -1564,14 +1567,15 @@ export default function PillsManagementTool() {
                                   fontSize: "11px",
                                   background: "rgba(52, 152, 219, 0.15)",
                                   color: "#3498db",
-                                  padding: "4px 10px",
+                                  padding: "4px 7px",
                                   borderRadius: "6px",
                                   border: "1px solid rgba(52, 152, 219, 0.4)",
                                   fontWeight: 600,
                                   display: "inline-flex",
                                   alignItems: "center",
-                                  gap: "5px",
-                                  whiteSpace: "nowrap",
+                                  gap: "4px",
+                                  lineHeight: "1.25",
+                                  overflowWrap: "anywhere",
                                 }}
                               >
                                 <Swords size={12} />
@@ -1583,7 +1587,7 @@ export default function PillsManagementTool() {
                         </td>
 
                         {/* Effect */}
-                        <td style={{ padding: "12px 16px", fontSize: "12px", color: "#ddd5ca", lineHeight: "1.4" }}>
+                        <td style={{ padding: "10px 8px", fontSize: "12px", color: "#ddd5ca", lineHeight: "1.35", overflowWrap: "anywhere" }}>
                           <div>{pill.effectDescription}</div>
                           {pill.effectSlots.length > 0 && (
                             <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginTop: "8px" }}>
@@ -1608,15 +1612,15 @@ export default function PillsManagementTool() {
                         </td>
 
                         {/* Duration */}
-                        <td style={{ padding: "12px 16px", fontSize: "12px", color: "#c8c0b4", whiteSpace: "nowrap" }}>
-                          <div style={{ display: "inline-flex", alignItems: "center", gap: "5px", background: "rgba(0,0,0,0.3)", padding: "3px 7px", borderRadius: "4px" }}>
+                        <td style={{ padding: "10px 6px", fontSize: "11px", color: "#c8c0b4" }}>
+                          <div style={{ display: "inline-flex", alignItems: "center", gap: "4px", background: "rgba(0,0,0,0.3)", padding: "3px 6px", borderRadius: "4px", lineHeight: "1.25" }}>
                             <Clock size={12} style={{ color: "#ffd47c" }} />
                             <span>{pill.duration}</span>
                           </div>
                         </td>
 
                         {/* Stacking Rule */}
-                        <td style={{ padding: "12px 16px", fontSize: "11px", color: "#a8a094", lineHeight: "1.4" }}>
+                        <td style={{ padding: "10px 8px", fontSize: "11px", color: "#a8a094", lineHeight: "1.35", overflowWrap: "anywhere" }}>
                           <div>{pill.stackRule}</div>
                           {pill.handlingRule && (
                             <div style={{ marginTop: "6px", color: "#ffd47c" }}>
@@ -1626,7 +1630,7 @@ export default function PillsManagementTool() {
                         </td>
 
                         {/* Allowlist Rule */}
-                        <td style={{ padding: "12px 16px", textAlign: "center" }}>
+                        <td style={{ padding: "10px 5px", textAlign: "center" }}>
                           <button
                             type="button"
                             onClick={() => handleAllowPill(pill)}
@@ -1637,23 +1641,25 @@ export default function PillsManagementTool() {
                               color: pill.isAllowedPill ? "#2ecc71" : "#ff8a80",
                               border: `1px solid ${pill.isAllowedPill ? "rgba(46, 204, 113, 0.4)" : "rgba(231, 76, 60, 0.38)"}`,
                               borderRadius: "6px",
-                              padding: "6px 10px",
+                              padding: "6px 7px",
                               fontSize: "11px",
                               fontWeight: 800,
                               cursor: saving ? "not-allowed" : "pointer",
-                              whiteSpace: "nowrap",
                               display: "inline-flex",
                               alignItems: "center",
-                              gap: "5px",
+                              justifyContent: "center",
+                              gap: "4px",
+                              width: "100%",
+                              minWidth: 0,
                             }}
                           >
                             {pill.isAllowedPill ? <ShieldCheck size={13} /> : <ShieldAlert size={13} />}
-                            {pill.isAllowedPill ? "Được Cắn" : "Chặn"}
+                            {pill.isAllowedPill ? "Cho" : "Chặn"}
                           </button>
                         </td>
 
                         {/* Lock Status */}
-                        <td style={{ padding: "12px 16px", textAlign: "center" }}>
+                        <td style={{ padding: "10px 5px", textAlign: "center" }}>
                           {pill.isLocked ? (
                             <span
                               style={{
@@ -1664,13 +1670,14 @@ export default function PillsManagementTool() {
                                 fontWeight: 800,
                                 background: "rgba(231, 76, 60, 0.15)",
                                 color: "#e74c3c",
-                                padding: "4px 8px",
+                                padding: "4px 6px",
                                 borderRadius: "4px",
                                 border: "1px solid rgba(231, 76, 60, 0.35)",
-                                whiteSpace: "nowrap",
+                                justifyContent: "center",
+                                width: "100%",
                               }}
                             >
-                              <XCircle size={12} /> Cấm Dùng
+                              <XCircle size={12} /> Cấm
                             </span>
                           ) : (
                             <span
@@ -1682,19 +1689,20 @@ export default function PillsManagementTool() {
                                 fontWeight: 800,
                                 background: "rgba(46, 204, 113, 0.15)",
                                 color: "#2ecc71",
-                                padding: "4px 8px",
+                                padding: "4px 6px",
                                 borderRadius: "4px",
                                 border: "1px solid rgba(46, 204, 113, 0.35)",
-                                whiteSpace: "nowrap",
+                                justifyContent: "center",
+                                width: "100%",
                               }}
                             >
-                              <CheckCircle2 size={12} /> Cho Phép
+                              <CheckCircle2 size={12} /> Mở
                             </span>
                           )}
                         </td>
 
                         {/* Action Button */}
-                        <td style={{ padding: "12px 16px", textAlign: "center" }}>
+                        <td style={{ padding: "10px 5px", textAlign: "center" }}>
                           <button
                             type="button"
                             onClick={() => handleTogglePill(pill)}
@@ -1706,15 +1714,16 @@ export default function PillsManagementTool() {
                               color: pill.isLocked ? "#fff" : "#e74c3c",
                               border: `1px solid ${pill.isLocked ? "#2ecc71" : "rgba(231, 76, 60, 0.45)"}`,
                               borderRadius: "6px",
-                              padding: "6px 12px",
+                              padding: "6px 7px",
                               fontSize: "11px",
                               fontWeight: 800,
                               cursor: saving ? "not-allowed" : "pointer",
-                              whiteSpace: "nowrap",
                               boxShadow: pill.isLocked ? "0 2px 4px rgba(46,204,113,0.3)" : "none",
+                              width: "100%",
+                              minWidth: 0,
                             }}
                           >
-                            {pill.isLocked ? "Mở Khóa" : "Khóa Dùng"}
+                            {pill.isLocked ? "Mở" : "Khóa"}
                           </button>
                         </td>
                       </tr>
