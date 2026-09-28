@@ -1315,7 +1315,23 @@ export default function PillsManagementTool() {
               overflow: "hidden",
             }}
           >
-            <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+            <div
+              style={{
+                width: "100%",
+                overflowX: "auto",
+                overflowY: "hidden",
+                scrollbarColor: "rgba(230, 174, 78, 0.55) rgba(18, 14, 10, 0.9)",
+              }}
+            >
+            <table
+              style={{
+                width: "1680px",
+                minWidth: "1680px",
+                tableLayout: "fixed",
+                borderCollapse: "collapse",
+                textAlign: "left",
+              }}
+            >
               <thead>
                 <tr
                   style={{
@@ -1328,16 +1344,16 @@ export default function PillsManagementTool() {
                     letterSpacing: "0.5px",
                   }}
                 >
-                  <th style={{ padding: "14px 16px", minWidth: "300px" }}>Vật Phẩm</th>
+                  <th style={{ padding: "14px 16px", width: "300px" }}>Vật Phẩm</th>
                   <th style={{ padding: "14px 16px", width: "110px" }}>PID</th>
-                  <th style={{ padding: "14px 16px" }}>Nhóm Buff</th>
-                  <th style={{ padding: "14px 16px" }}>Nguồn Gốc (Bấm xem chi tiết)</th>
-                  <th style={{ padding: "14px 16px", minWidth: "220px" }}>Tác Dụng & Chỉ Số</th>
-                  <th style={{ padding: "14px 16px", width: "120px" }}>Thời Hạn</th>
-                  <th style={{ padding: "14px 16px", minWidth: "220px" }}>Cơ Chế Cắn Trùng</th>
-                  <th style={{ padding: "14px 16px", textAlign: "center", width: "130px" }}>Quy Chuẩn</th>
-                  <th style={{ padding: "14px 16px", textAlign: "center", width: "110px" }}>Trạng Thái</th>
-                  <th style={{ padding: "14px 16px", textAlign: "center", width: "110px" }}>Hành Động</th>
+                  <th style={{ padding: "14px 16px", width: "220px" }}>Nhóm Buff</th>
+                  <th style={{ padding: "14px 16px", width: "190px" }}>Nguồn Gốc</th>
+                  <th style={{ padding: "14px 16px", width: "230px" }}>Tác Dụng & Chỉ Số</th>
+                  <th style={{ padding: "14px 16px", width: "115px" }}>Thời Hạn</th>
+                  <th style={{ padding: "14px 16px", width: "245px" }}>Cơ Chế Cắn Trùng</th>
+                  <th style={{ padding: "14px 12px", textAlign: "center", width: "115px" }}>Quy Chuẩn</th>
+                  <th style={{ padding: "14px 12px", textAlign: "center", width: "115px" }}>Trạng Thái</th>
+                  <th style={{ padding: "14px 12px", textAlign: "center", width: "120px" }}>Hành Động</th>
                 </tr>
               </thead>
               <tbody>
@@ -1365,6 +1381,7 @@ export default function PillsManagementTool() {
                           borderBottom: "1px solid rgba(230, 174, 78, 0.08)",
                           background: pill.isLocked ? "rgba(231, 76, 60, 0.04)" : "transparent",
                           transition: "background 0.15s ease",
+                          verticalAlign: "top",
                         }}
                       >
                         {/* Name + Icon */}
@@ -1706,6 +1723,7 @@ export default function PillsManagementTool() {
                 )}
               </tbody>
             </table>
+            </div>
           </div>
         </div>
       )}
