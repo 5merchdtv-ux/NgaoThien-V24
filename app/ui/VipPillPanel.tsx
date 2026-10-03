@@ -181,7 +181,7 @@ export default function VipPillPanel({ allPills }: { allPills: CatalogPill[] }) 
 
       <div style={card}>
         <div style={{ color: "#ffd47c", fontWeight: 800, fontSize: "16px", marginBottom: 6 }}>
-          Gói Pill VIP — viên "{data?.bundleName || "Hoàn Tổng Hợp VIP"}" (PID {config?.bundlePid ?? 1008006001})
+          Gói Pill VIP — viên "Con Nhộng" (PID {config?.bundlePid ?? 1008006002})
         </div>
         <div style={{ color: "#c8c0b4", fontSize: "13px", lineHeight: 1.6 }}>
           Thành viên VIP còn hạn cắn 1 viên sẽ nhận cùng lúc tất cả pill bên dưới (mỗi pill {config?.durationHours ?? 24} giờ). Hết hạn VIP thì không cắn được. VIP do admin cấp ở mục thành viên. Chỉ áp dụng cho Kênh 2; mua bằng lệnh <b>!muavippill &lt;số lượng&gt;</b>.
