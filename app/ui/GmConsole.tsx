@@ -651,7 +651,7 @@ export default function GmConsole({
   const [operationLoading, setOperationLoading] = useState(false);
   const [dangerConfirmation, setDangerConfirmation] = useState("");
   const [liveOperationsAvailable, setLiveOperationsAvailable] = useState(false);
-  const [itemType, setItemType] = useState(1);
+  const [itemType, setItemType] = useState(3);
   const [sendScope, setSendScope] = useState<"character" | "all" | "chinh" | "ta">("character");
   const [sendAllConfirmation, setSendAllConfirmation] = useState("");
   const [convertJob, setConvertJob] = useState(1);
