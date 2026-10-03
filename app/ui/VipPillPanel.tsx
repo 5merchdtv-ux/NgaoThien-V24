@@ -133,7 +133,8 @@ export default function VipPillPanel({ allPills }: { allPills: CatalogPill[] }) 
 
   const candidates = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const list = allPills.filter((p) => p.itemKind === "statPill" && !memberPids.has(p.pid));
+    // Bỏ các món "Tức thời (Mở Túi)": đó là túi quà mở ra nhận đồ, không phải pill buff nên không dùng được trong gói
+    const list = allPills.filter((p) => p.itemKind === "statPill" && !memberPids.has(p.pid) && !/tức thời|mở túi/i.test(p.duration));
     const filtered = q
       ? list.filter((p) => p.name.toLowerCase().includes(q) || String(p.pid).includes(q) || p.groupName.toLowerCase().includes(q) || p.effectDescription.toLowerCase().includes(q))
       : list;
