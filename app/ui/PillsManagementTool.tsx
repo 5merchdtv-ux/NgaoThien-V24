@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
+import VipPillPanel from "./VipPillPanel";
 import {
   ShieldAlert,
   ShieldCheck,
@@ -190,7 +191,7 @@ function getGroupBadgeColor(groupId: string): { bg: string; border: string; text
 }
 
 export default function PillsManagementTool() {
-  const [activeTab, setActiveTab] = useState<"all" | "catalog" | "herbEvent" | "nonPill" | "matrix" | "mechanics">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "catalog" | "herbEvent" | "nonPill" | "matrix" | "mechanics" | "vip">("all");
   const [groups, setGroups] = useState<PillGroup[]>([]);
   const [allowlistStrictEnabled, setAllowlistStrictEnabled] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
@@ -1053,6 +1054,30 @@ export default function PillsManagementTool() {
 
         <button
           type="button"
+          onClick={() => setActiveTab("vip")}
+          style={{
+            background:
+              activeTab === "vip"
+                ? "linear-gradient(180deg, #f0c35e, #b86e24)"
+                : "rgba(255, 255, 255, 0.05)",
+            color: activeTab === "vip" ? "#180f05" : "#c8c0b4",
+            fontWeight: activeTab === "vip" ? 800 : 500,
+            border: "1px solid rgba(230, 174, 78, 0.3)",
+            borderRadius: "6px",
+            padding: "10px 20px",
+            fontSize: "14px",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
+          <Award size={16} />
+          Gói Pill VIP
+        </button>
+
+        <button
+          type="button"
           onClick={() => setActiveTab("mechanics")}
           style={{
             background:
@@ -1075,6 +1100,8 @@ export default function PillsManagementTool() {
           Cơ Chế GameServer & Chi Tiết Nhóm
         </button>
       </div>
+
+      {activeTab === "vip" && <VipPillPanel allPills={allPills} />}
 
       {/* TAB 1: CATALOG & TOGGLE */}
       {(activeTab === "all" || activeTab === "catalog" || activeTab === "herbEvent" || activeTab === "nonPill") && (
